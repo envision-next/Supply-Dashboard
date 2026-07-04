@@ -17,5 +17,9 @@ out = out.replace('__LOGO_LIGHT__', _logo_uri('assets/logo-light.png'))
 out = out.replace('__LOGO_DARK__', _logo_uri('assets/logo-dark.png'))
 dest = 'RERA Market Analysis Dashboard.html'
 open(dest, 'w', encoding='utf-8').write(out)
+# index.html is the same file, served as the GitHub Pages site root so the
+# shared link stays current on every rebuild.
+open('index.html', 'w', encoding='utf-8').write(out)
 import os
 print(f"wrote {dest}: {round(os.path.getsize(dest)/1e6,2)} MB (open in any browser, no internet needed)")
+print("wrote index.html (GitHub Pages site root)")
