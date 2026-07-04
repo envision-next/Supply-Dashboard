@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RERA Easy · Market Intelligence</title>
+<style>
+  :root{
+    --bg:#ececec; --card:#ffffff; --ink:#191919; --mut:#6b7280; --line:#e5e7eb;
+    --band:#171717; --yellow:#F5C518; --yellow2:#e0b00d;
+    --green:#23a55a; --red:#e5484d; --blue:#2563eb;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px}
+  header{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;background:var(--band)}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brandlogo{height:34px;width:auto;display:block}
+  .rlogoimg{height:40px;width:auto;display:block}
+  .mclogoimg{height:38px;width:auto;display:block}
+  .logo{width:40px;height:40px;border-radius:9px;background:var(--yellow);display:flex;align-items:center;justify-content:center;font-weight:800;color:#171717;font-size:16px}
+  .brand h1{margin:0;font-size:18px;font-weight:700;color:#fff}
+  .brand h1 em{font-style:italic;color:var(--yellow);font-weight:700}
+  .brand .tag{color:#b8bcc4;font-size:11.5px;margin-top:1px;letter-spacing:.3px}
+  .topbtn{background:var(--yellow);color:#171717;border:none;border-radius:8px;padding:10px 17px;font-weight:700;font-size:13px;cursor:pointer}
+  .topbtn:hover{background:var(--yellow2)}
+  .themebtn{background:transparent;border:1px solid #3a3f47;color:#fff;border-radius:8px;padding:9px 13px;font-size:13px;font-weight:600;cursor:pointer}
+  .themebtn:hover{border-color:var(--yellow)}
+  .wrap{display:flex;min-height:calc(100vh - 66px)}
+  .side{width:240px;flex:0 0 240px;background:var(--card);border-right:1px solid var(--line);padding:16px 14px;overflow-y:auto}
+  .main{flex:1;padding:18px 22px;overflow-x:hidden;min-width:0}
+  .fgroup{margin-bottom:16px}
+  .fgroup h3{font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--mut);margin:0 0 8px;font-weight:700}
+  .chk{display:flex;align-items:center;gap:7px;padding:3px 0;cursor:pointer;font-size:13px;color:#374151}
+  .chk input{accent-color:var(--yellow2);width:14px;height:14px}
+  select{width:100%;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:7px 8px;font-size:13px}
+  .yrrow{display:flex;gap:8px}.yrcol{flex:1}
+  .yrcol label{display:block;font-size:10px;color:var(--mut);margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px}
+  .btn{background:#fff;border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:8px 10px;cursor:pointer;font-size:12.5px;width:100%}
+  .btn:hover{border-color:var(--yellow2)}
+  #errbar{display:none;background:#fde2e1;color:#9b1c17;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:13px;white-space:pre-wrap;border:1px solid #f5c6c4}
+  .secttl{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:#9aa1ad;margin:4px 2px 12px}
+  .scopebar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:12px;flex-wrap:wrap}
+  .crumb{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}
+  .crumb a{color:var(--blue);cursor:pointer;text-decoration:none}
+  .crumb a:hover{text-decoration:underline}
+  .crumb span.sep{color:var(--mut)}
+  .crumb .cur{color:var(--ink);font-weight:700;font-size:15px}
+  .scopebtns{display:flex;gap:8px}
+  .gbtn{background:var(--yellow);color:#171717;border:none;border-radius:8px;padding:9px 16px;font-weight:700;font-size:12.5px;cursor:pointer}
+  .gbtn:hover{background:var(--yellow2)}
+  .backbtn{background:#fff;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 13px;font-size:12.5px;cursor:pointer}
+  .backbtn:disabled{opacity:.4;cursor:default}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;min-height:1px}
+  .chip2{display:inline-flex;align-items:center;gap:7px;background:#fff7d6;border:1px solid #f0d469;color:#7a5c00;border-radius:20px;padding:4px 10px;font-size:12px;font-weight:600}
+  .chip2 b{font-weight:700}
+  .chip2 .x{cursor:pointer;color:#9a7700;font-weight:800}
+  .searchwrap{position:relative;display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .searchwrap input{width:100%;max-width:340px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 11px;font-size:12.5px}
+  .searchwrap input:focus{outline:none;border-color:var(--yellow2)}
+  .searchsug{position:absolute;top:calc(100% + 4px);left:0;width:340px;max-width:100%;max-height:128px;overflow-y:auto;background:var(--card);border:1px solid var(--line);border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.18);z-index:60;display:none}
+  .searchsug .it{padding:6px 11px;cursor:pointer;font-size:12.5px;border-bottom:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+  .searchsug .it:last-child{border-bottom:none}
+  .searchsug .it:hover{background:#fffbea}
+  body.dark .searchsug .it:hover{background:#242a33}
+  .searchclear{background:transparent;border:1px solid var(--line);color:var(--mut);border-radius:8px;padding:7px 11px;font-size:12px;cursor:pointer;white-space:nowrap}
+  .searchclear:hover{border-color:var(--yellow2);color:var(--ink)}
+  .searchans{font-size:12.5px;color:#374151;margin:2px 0 12px;min-height:1px}
+  .searchans b{color:#171717}.searchans .hl{color:var(--yellow2);font-weight:700}
+  .drillbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;min-height:1px}
+  .dpill{display:inline-flex;align-items:center;gap:7px;background:var(--band);color:#fff;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600}
+  .dpill .x{cursor:pointer;color:var(--yellow);font-weight:800}
+  .dpill.root{background:#fff;color:#374151;border:1px solid var(--line);cursor:pointer}
+  .dpill.root:hover{border-color:var(--yellow2)}
+  .dpill.cur{background:var(--yellow);color:#171717;box-shadow:0 0 0 3px rgba(245,197,24,.30)}
+  .dpill.cur .x{color:#7a5c00}
+  .drillback{background:#fff;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;font-weight:600}
+  .drillback:hover{border-color:var(--yellow2)}.drillback:disabled{opacity:.4;cursor:default}
+  .geosel select{margin-bottom:6px}
+  .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:20px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:17px 19px;box-shadow:0 1px 2px rgba(0,0,0,.03);display:flex;flex-direction:column;justify-content:center;min-height:104px}
+  .kpi .lab{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.4px;font-weight:700}
+  .kpi .val{font-size:26px;font-weight:800;margin-top:7px;color:#171717}
+  .kpi .note{font-size:11px;color:var(--mut);margin-top:4px}
+  @media(max-width:1250px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  @media(max-width:760px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  .kpi.k-green .val{color:var(--green)} .kpi.k-red .val{color:var(--red)} .kpi.k-blue .val{color:var(--blue)} .kpi.k-yellow .val{color:var(--yellow2)}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:15px 17px;min-width:0;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+  .card h2{font-size:13px;margin:0 0 12px;font-weight:700;color:#374151}
+  .card.full{grid-column:1 / -1}
+  .chartbox{position:relative;height:300px;width:100%;overflow:visible}
+  .chartbox.bar{height:300px;overflow:hidden}
+  .chartbox svg{display:block;width:100%;height:100%}
+  .donutwrap{display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap;height:100%}
+  .donutwrap .dsvg{flex:0 0 180px;height:180px}
+  .donutwrap .dsvg svg{width:180px;height:180px;overflow:visible}
+  .sl{transition:transform .16s ease, opacity .16s;transform-box:fill-box;transform-origin:center;cursor:pointer}
+  .donutwrap:hover .sl{opacity:.45}
+  .donutwrap .sl:hover{opacity:1;transform:scale(1.07)}
+  .cv{font-weight:800;fill:#171717}.cl{fill:#6b7280}
+  .legend{font-size:12px;display:grid;grid-template-columns:minmax(0,1fr) max-content;gap:9px 12px;align-items:center;align-content:center;min-width:0;flex:1 1 150px}
+  .legend .li{display:flex;align-items:center;gap:9px;min-width:0}
+  .legend .sw{flex:0 0 12px;width:12px;height:12px;border-radius:3px}
+  .legend .lt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#374151}
+  .legend .lv{display:flex;gap:8px;align-items:baseline;justify-self:end;white-space:nowrap}
+  .legend .lv b{font-size:14px;color:#171717}.legend .lv .muted{font-size:11.5px}
+  .banks{display:flex;flex-direction:column;gap:11px;padding-top:4px}
+  .bankrow{cursor:pointer;padding:5px 7px;border-radius:8px;transition:background .14s}
+  .bankrow:hover{background:#fffbea}
+  .bankrow .bt{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px;color:#374151}
+  .bankrow .bt b{color:#171717}
+  .bktrack{height:9px;background:#f1f1f3;border-radius:6px;overflow:hidden}
+  .bkfill{height:100%;background:linear-gradient(90deg,var(--yellow),var(--yellow2));border-radius:6px}
+  .bankrow:hover .bkfill{filter:brightness(.94)}
+  .toggle{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .tg{background:#fff;border:1px solid var(--line);color:#374151;border-radius:9px;padding:9px 15px;font-size:13px;font-weight:600;cursor:pointer}
+  .tg:hover{border-color:var(--yellow2)}
+  .tg.on{background:var(--yellow);border-color:var(--yellow);color:#171717}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(208px,1fr));gap:13px;max-height:560px;overflow-y:auto;padding:2px 6px 2px 2px}
+  .gcard{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:15px 16px 17px;cursor:pointer;transition:transform .14s,border-color .14s,box-shadow .14s;position:relative;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+  .gcard:hover{border-color:var(--yellow2);transform:translateY(-3px);box-shadow:0 10px 22px rgba(0,0,0,.12)}
+  .gcard.leaf{cursor:default}.gcard.leaf:hover{transform:none;border-color:var(--line);box-shadow:0 1px 2px rgba(0,0,0,.03)}
+  .gcard .nm{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700;font-size:14px;color:#171717}
+  .gcard .nmr{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+  .cardmc{background:transparent;border:1px solid var(--line);color:var(--yellow2);border-radius:6px;font-size:12px;padding:2px 7px;cursor:pointer;line-height:1.3}
+  .cardmc:hover{background:var(--yellow);color:#171717;border-color:var(--yellow)}
+  .gcard .nm .lt2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .gcard .nm .ar{flex:0 0 auto;color:var(--yellow2);font-size:16px;font-weight:800}
+  .gcard .big{font-size:27px;font-weight:800;margin:9px 0 1px;color:#171717}
+  .gcard .big small{font-size:11.5px;color:var(--mut);font-weight:500;margin-left:6px}
+  .gcard .share{font-size:11px;color:var(--mut)}
+  .gcard .mini{display:flex;gap:7px;margin-top:12px;flex-wrap:wrap}
+  .gcard .chip{font-size:10.5px;padding:3px 8px;border-radius:7px;background:#f6f7f9;color:#6b7280;border:1px solid var(--line)}
+  .gcard .chip b{color:#171717;font-weight:700}
+  .gcard .chip.g b{color:var(--green)} .gcard .chip.r b{color:var(--red)} .gcard .chip.b b{color:var(--blue)}
+  .gcard .sharebar{position:absolute;left:0;bottom:0;height:3px;background:var(--yellow)}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{padding:8px 9px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+  th:first-child,td:first-child{text-align:left}
+  th{color:var(--mut);font-weight:700;cursor:pointer;user-select:none;position:sticky;top:0;background:#fafafa}
+  th:hover{color:var(--ink)}
+  tbody tr{cursor:pointer}tbody tr:hover{background:#fffbea}
+  tbody tr.leaf{cursor:default}
+  .tablewrap{max-height:480px;overflow-y:auto;border-radius:8px}
+  .pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+  .drill{color:var(--yellow2);font-size:11px;margin-left:5px;font-weight:600}
+  .muted{color:var(--mut)}
+  .trendseries{display:flex;flex-wrap:wrap;gap:6px 16px;margin:2px 0 12px}
+  .trendseries label{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;cursor:pointer;color:#374151}
+  .trendseries .sw{width:11px;height:11px;border-radius:3px;display:inline-block}
+  body.dark .trendseries label{color:#c7ccd4}
+  rect.barclick{cursor:pointer}
+  #tip{position:fixed;display:none;background:#171717;color:#fff;font-size:11.5px;padding:6px 9px;border-radius:7px;pointer-events:none;z-index:2000;box-shadow:0 4px 14px rgba(0,0,0,.3);max-width:250px}
+  .gbar{transition:opacity .14s;cursor:default}.gbar:hover{opacity:.72}
+  footer{background:var(--band);color:#c7cbd2;padding:22px 24px;margin-top:8px}
+  .foot-in{display:flex;justify-content:space-between;flex-wrap:wrap;gap:18px;max-width:1200px}
+  footer .fl b{color:#fff}.footer-logo .y{color:var(--yellow)}
+  footer .fcol{font-size:12px;line-height:1.7}
+  footer .fcol h4{margin:0 0 6px;color:#fff;font-size:12px;letter-spacing:.5px}
+  .footlogo{height:30px;width:auto;display:block;margin-bottom:9px}
+  .footmade{text-align:center;color:#8b9099;font-size:11.5px;padding:14px 24px 2px;border-top:1px solid #2a2d33;margin-top:16px}
+  .footmade b{color:var(--yellow);font-weight:700}
+  @media(max-width:1100px){.grid{grid-template-columns:1fr}.donutwrap .dsvg{flex:0 0 180px;height:180px}.donutwrap .dsvg svg{width:180px;height:180px}}
+
+  /* ---- dark theme ---- */
+  body.dark{--bg:#0f1115;--card:#1b1e24;--ink:#e6e8ec;--mut:#98a0ad;--line:#2b2f37;--band:#0b0d10}
+  body.dark select,body.dark .btn,body.dark .backbtn,body.dark .drillback,body.dark .tg,body.dark .searchwrap input{background:#20242c;color:var(--ink);border-color:var(--line)}
+  body.dark .tg.on{background:var(--yellow);color:#171717;border-color:var(--yellow)}
+  body.dark .dpill.root{background:#20242c;color:var(--ink)}
+  body.dark .chk{color:#c7ccd4}
+  body.dark .card h2{color:#c7ccd4}
+  body.dark .kpi .val,body.dark .gcard .big,body.dark .gcard .nm{color:var(--ink)}
+  body.dark .kpi.k-green .val{color:var(--green)} body.dark .kpi.k-red .val{color:var(--red)} body.dark .kpi.k-blue .val{color:#60a5fa} body.dark .kpi.k-yellow .val{color:var(--yellow)}
+  body.dark .gcard .chip{background:#242a33;color:#aeb4bd;border-color:var(--line)}
+  body.dark .gcard .chip b{color:var(--ink)}
+  body.dark .gcard .chip.g b{color:var(--green)} body.dark .gcard .chip.r b{color:var(--red)} body.dark .gcard .chip.b b{color:#60a5fa}
+  body.dark .bankrow .bt{color:#c7ccd4} body.dark .bankrow .bt b{color:var(--ink)}
+  body.dark .bankrow:hover,body.dark tbody tr:hover{background:#242a33}
+  body.dark .bktrack{background:#2b2f37}
+  body.dark th{background:#20242c;color:var(--mut)} body.dark th:hover{color:var(--ink)}
+  body.dark .searchans{color:#c7ccd4} body.dark .searchans b{color:var(--ink)}
+  body.dark svg text{fill:#c7ccd4} body.dark svg line{stroke:#2b2f37}
+  body.dark .cv{fill:var(--ink)}
+  body.dark .legend .lt{color:#c7ccd4} body.dark .legend .lv b{color:var(--ink)}
+
+  #reportView{display:none;position:fixed;inset:0;z-index:1000;background:#3a3a3a;overflow:auto}
+  #reportView.open{display:block}
+  .rtoolbar{position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;background:#171717;border-bottom:1px solid #000;padding:11px 18px;z-index:5}
+  .rtoolbar .l{color:#c7cbd2;font-size:12.5px}
+  .rtoolbar button{margin-left:8px}
+  .sheet{max-width:920px;margin:22px auto;background:#fff;color:#1b2430;padding:50px 58px;box-shadow:0 8px 40px rgba(0,0,0,.4);font-size:13px;line-height:1.55}
+  .sheet .rhead{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid var(--yellow);padding-bottom:15px;margin-bottom:8px}
+  .sheet .rlogo{display:flex;align-items:center;gap:11px}
+  .sheet .rlogo .lg{width:42px;height:42px;border-radius:9px;background:var(--yellow);color:#171717;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px}
+  .sheet .rlogo b{font-size:18px;color:#171717}.sheet .rlogo b em{color:var(--yellow2);font-style:italic}
+  .sheet .rlogo span{display:block;font-size:10.5px;color:#6b7a90;letter-spacing:.4px}
+  .sheet h2.title{font-size:23px;margin:18px 0 4px;color:#171717}
+  .sheet .scopemeta{color:#5a6b82;font-size:12px;margin-bottom:22px}
+  .sheet h3{font-size:15px;color:#171717;border-left:4px solid var(--yellow);padding-left:9px;margin:26px 0 11px}
+  .sheet p{margin:9px 0}
+  .sheet .kgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
+  .sheet .kbox{background:#fffbe9;border:1px solid #f0e3a8;border-radius:8px;padding:11px 13px}
+  .sheet .kbox .l{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:#8a7a3a}
+  .sheet .kbox .v{font-size:20px;font-weight:700;color:#171717;margin-top:3px}
+  .sheet .kbox .n{font-size:10.5px;color:#8a7a3a}
+  .sheet table{font-size:11.5px;margin:12px 0}
+  .sheet th,.sheet td{border-bottom:1px solid #e2e9f2;padding:6px 8px;text-align:right}
+  .sheet th:first-child,.sheet td:first-child{text-align:left}
+  .sheet th{color:#3a4a5c;background:#faf7e6;position:static}
+  .sheet thead th{border-bottom:2px solid #ead98f}
+  .sheet ul{margin:9px 0;padding-left:20px}.sheet li{margin:6px 0}
+  .sheet .flag{font-weight:700}
+  .sheet .pos{color:#0f8a4f}.sheet .neg{color:#c43b2f}
+  .sheet .rfoot{margin-top:34px;border-top:1px solid #e2e9f2;padding-top:12px;color:#6b7a90;font-size:10.5px;display:flex;justify-content:space-between}
+  @media print{
+    body *{visibility:hidden}#reportView,#reportView *{visibility:visible}
+    #reportView{position:absolute;inset:auto;background:#fff}.rtoolbar{display:none}
+    .sheet{box-shadow:none;margin:0;max-width:none;padding:0 6px}
+    .sheet h3{break-after:avoid}.sheet table,.sheet .kgrid{break-inside:avoid}
+  }
+
+  /* ---- Master Card (animated supply showcase) ---- */
+  .pvbtn{background:transparent;border:1px solid var(--yellow);color:var(--yellow2);border-radius:8px;padding:9px 15px;font-weight:700;font-size:12.5px;cursor:pointer}
+  .pvbtn:hover{background:var(--yellow);color:#171717}
+  #masterView{display:none;position:fixed;inset:0;z-index:1100;background:rgba(10,12,16,.72);overflow:auto;animation:mvFade .25s ease}
+  #masterView.open{display:block}
+  @keyframes mvFade{from{opacity:0}to{opacity:1}}
+  .mtoolbar{position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;background:#171717;border-bottom:1px solid #000;padding:11px 18px;z-index:5}
+  .mtoolbar .l{color:var(--yellow);font-size:13px;font-weight:700;letter-spacing:.3px}
+  .mtoolbar button{margin-left:8px}
+  .mcard{max-width:1000px;margin:22px auto 40px;background:var(--card);color:var(--ink);border-radius:18px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5);transform:scale(.96);opacity:0;transition:transform .4s cubic-bezier(.2,.7,.2,1),opacity .4s}
+  #masterView.open .mcard{transform:scale(1);opacity:1}
+  .mc-head{background:linear-gradient(120deg,#171717,#20242c);padding:26px 30px;border-bottom:4px solid var(--yellow);display:flex;justify-content:space-between;align-items:flex-start;gap:20px}
+  .mc-brand{display:flex;gap:13px;align-items:center}
+  .mc-brand .lg{width:46px;height:46px;border-radius:11px;background:var(--yellow);color:#171717;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px}
+  .mc-brand b{font-size:20px;color:#fff}.mc-brand b em{color:var(--yellow);font-style:italic}
+  .mc-brand span{display:block;font-size:11px;color:#b8bcc4;letter-spacing:.4px}
+  .mc-title{font-size:26px;font-weight:800;color:#fff;margin:14px 0 2px}
+  .mc-sub{font-size:12px;color:#b8bcc4;max-width:640px}
+  .mc-tag{display:inline-block;margin-top:9px;background:var(--yellow);color:#171717;font-size:11px;font-weight:800;padding:4px 11px;border-radius:20px;letter-spacing:.5px}
+  .mc-body{padding:8px 30px 30px}
+  .mc-sect{opacity:0;transform:translateY(14px);animation:mcUp .5s ease forwards}
+  @keyframes mcUp{to{opacity:1;transform:none}}
+  .mc-sect h3{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--mut);margin:22px 0 12px;font-weight:800}
+  .mc-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .mc-kpi{background:var(--bg);border:1px solid var(--line);border-radius:13px;padding:15px 16px;position:relative;overflow:hidden}
+  .mc-kpi .l{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--mut);font-weight:600}
+  .mc-kpi .v{font-size:26px;font-weight:800;margin-top:6px;color:var(--ink)}
+  .mc-kpi .n{font-size:11px;color:var(--mut);margin-top:2px}
+  .mc-kpi .bar{position:absolute;left:0;bottom:0;height:3px;background:var(--yellow);width:0;transition:width 1s ease .3s}
+  .mc-grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .mc-panel{background:var(--bg);border:1px solid var(--line);border-radius:13px;padding:15px 17px;min-width:0}
+  .mc-panel h4{margin:0 0 10px;font-size:13px;color:var(--ink)}
+  .mc-foot{margin-top:24px;border-top:1px solid var(--line);padding-top:12px;color:var(--mut);font-size:10.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  @media(max-width:820px){.mc-kpis{grid-template-columns:repeat(2,1fr)}.mc-grid2{grid-template-columns:1fr}}
+  .mtsel{background:#20242c;color:#fff;border:1px solid #3a3f47;border-radius:6px;padding:5px 7px;font-size:12px;width:auto}
+  #cmpChooser{display:none;position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:8;align-items:flex-start;justify-content:center}
+  .cmpbox{background:var(--card);color:var(--ink);border-radius:14px;padding:20px 22px;margin-top:70px;max-width:640px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  .cmpbox h3{margin:0 0 14px;font-size:15px}
+  .cmprow{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .mc-compare{display:flex;gap:22px;align-items:flex-start;justify-content:center;flex-wrap:wrap;padding:0 8px}
+  .mc-compare .mcard{flex:1 1 560px;max-width:700px;margin:22px 0}
+  .mc-chain{display:flex;flex-direction:column;gap:6px}
+  .mc-chrow{display:grid;grid-template-columns:82px 1fr auto auto;gap:12px;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:8px 12px;font-size:12.5px}
+  .mc-chlvl{color:var(--mut);font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;font-weight:700}
+  .mc-chnm{font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mc-chpct{color:var(--mut);white-space:nowrap}.mc-chpct b{color:var(--yellow2)}
+  .mc-chn{color:var(--mut);white-space:nowrap;font-size:11.5px}
+  @media print{
+    body.print-master #masterView,body.print-master #masterView *{visibility:visible}
+    body.print-master #masterView{position:absolute;inset:auto;background:#fff}
+    body.print-master .mtoolbar{display:none}
+    body.print-master .mcard{box-shadow:none;margin:0;max-width:none;transform:none;opacity:1}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img class="brandlogo" src="__LOGO_DARK__" alt="RERA Easy">
+    <div class="tag" style="border-left:1px solid #3a3f47;padding-left:12px">Real Estate Market Intelligence · Maharashtra</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="themebtn" id="themeBtn" title="Toggle dark mode">🌙 Dark</button>
+  </div>
+</header>
+<div class="wrap">
+  <aside class="side">
+    <div class="fgroup"><button class="btn" id="resetBtn">Reset all filters</button></div>
+    <div class="fgroup"><h3>Registration Year</h3>
+      <div class="yrrow"><div class="yrcol"><label>From</label><select id="yrMin"></select></div>
+        <div class="yrcol"><label>To</label><select id="yrMax"></select></div></div></div>
+    <div class="fgroup"><h3>Location (drill filter)</h3><div class="geosel" id="geoFilter"></div></div>
+    <div class="fgroup"><h3>Project Type</h3><div id="fType"></div></div>
+    <div class="fgroup"><h3>Project Status</h3><div id="fPStatus"></div></div>
+    <div class="fgroup"><h3>Current Status</h3><div id="fCStatus"></div></div>
+    <div class="fgroup"><h3>RERA Easy Clientele</h3><div id="fCli"></div></div>
+  </aside>
+  <main class="main">
+    <div id="errbar"></div>
+    <div class="searchwrap"><input id="searchBox" placeholder="Search any district, taluka, village, pincode or bank…" autocomplete="off"><button class="searchclear" id="searchClear" title="Clear search" style="display:none">✕ Clear</button><div class="searchsug" id="searchSug"></div></div>
+    <div class="searchans" id="searchAns"></div>
+    <div class="scopebar">
+      <div class="crumb" id="crumb"></div>
+      <div class="scopebtns">
+        <button class="backbtn" id="backBtn">‹ Back</button>
+        <button class="pvbtn" id="reraPreviewBtn" title="Master Card for RERA Easy clientele only">★ RERA Preview</button>
+        <button class="pvbtn" id="previewBtn">◧ Preview</button>
+        <button class="gbtn" id="genReportBtn">Generate Report</button>
+      </div>
+    </div>
+    <div class="chips" id="chips"></div>
+
+    <div class="secttl">Analytics Overview</div>
+    <div class="kpis" id="kpis"></div>
+
+    <div class="secttl">Year-wise Trend Analysis</div>
+    <div class="card full" style="margin-bottom:20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:4px">
+        <h2 id="t-trend" style="margin:0">Year-wise trend</h2>
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;flex-wrap:wrap"><span class="muted">Years</span>
+          <select id="trYrMin" style="width:auto;padding:5px 7px"></select><span class="muted">–</span><select id="trYrMax" style="width:auto;padding:5px 7px"></select>
+          <span class="muted" style="margin-left:10px">Month view</span><select id="trMonthYear" style="width:auto;padding:5px 7px"></select></div>
+      </div>
+      <div class="trendseries" id="trendSeries"></div>
+      <div class="chartbox bar" id="timeChart"></div>
+      <div class="muted" id="trendNote" style="margin-top:6px;font-size:12px"></div>
+    </div>
+
+    <div class="secttl">Explore &amp; Drill Down</div>
+    <div class="toggle" id="toggle"></div>
+    <div class="drillbar" id="drillbar"></div>
+    <div class="card full" id="cardsCard" style="margin-bottom:18px">
+      <h2 id="t-cards">Explore by Division</h2>
+      <div class="cards" id="geoCards"></div>
+      <div class="muted" id="cardsNote" style="margin-top:12px;font-size:12px"></div>
+    </div>
+    <div class="secttl" id="t-others" style="margin-top:4px">Other dimensions</div>
+    <div id="otherCharts" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-bottom:18px"></div>
+    <div class="card full">
+      <h2 id="t-table">Area breakdown</h2>
+      <div class="tablewrap"><table id="dataTable"><thead><tr id="thead"></tr></thead><tbody id="tbody"></tbody></table></div>
+    </div>
+  </main>
+</div>
+<footer><div class="foot-in">
+  <div class="fcol"><img class="footlogo" src="__LOGO_DARK__" alt="RERA Easy">
+    Specialised MahaRERA compliance & market intelligence partner for real-estate developers across Maharashtra.</div>
+  <div class="fcol"><h4>CONTACT</h4>Pune: +91 91384 90809<br>Mumbai: +91 99879 57851<br>info@reraeasy.com</div>
+  <div class="fcol"><h4>DATA</h4>MahaRERA project registry<br><span id="footRange">2017–2026</span> · <span id="footCount">53,536</span> projects<br>Confidential — internal use</div>
+</div><div class="footmade">Made by <b>Leenesh Agrawal</b></div></footer>
+
+<div id="reportView">
+  <div class="rtoolbar"><div class="l" id="rtLabel">Market Intelligence Report</div>
+    <div><button class="backbtn" id="rPrint">Print / Save as PDF</button><button class="backbtn" id="rClose">Close</button></div></div>
+  <div class="sheet" id="reportSheet"></div>
+</div>
+<div id="masterView">
+  <div class="mtoolbar"><div class="l" id="mtLabel">Master Card</div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span style="color:#c7cbd2;font-size:12px">Years</span>
+      <select id="mYrMin" class="mtsel"></select><span style="color:#c7cbd2">–</span><select id="mYrMax" class="mtsel"></select>
+      <button class="backbtn" id="mBack" style="display:none">‹ Single card</button>
+      <button class="backbtn" id="mCompare">⇆ Compare</button>
+      <button class="backbtn" id="mPrint">Print / Save as PDF</button><button class="backbtn" id="mClose">Close</button></div></div>
+  <div id="cmpChooser"><div class="cmpbox"><h3>Compare two scopes</h3>
+    <div class="cmprow"><button class="gbtn" data-cmp="parent">Current vs Parent</button><button class="gbtn" data-cmp="maha">Current vs Maharashtra</button></div>
+    <div class="cmprow" style="flex-wrap:wrap"><span class="muted">Two locations:</span><select id="cmpA" class="mtsel" style="min-width:200px"></select><select id="cmpB" class="mtsel" style="min-width:200px"></select><button class="gbtn" data-cmp="two">Compare these</button></div>
+    <div style="text-align:right"><button class="backbtn" id="cmpCancel">Cancel</button></div></div></div>
+  <div id="masterSheet"></div>
+</div>
+<div id="tip"></div>
+
+<script>
+window.addEventListener('error',function(e){var b=document.getElementById('errbar');if(b){b.style.display='block';b.textContent='Error: '+(e.message||e.error)+'  ('+(e.filename||'')+':'+(e.lineno||'')+')';}});
+/*DATA_PLACEHOLDER*/
+var C=DATA.cols,N=DATA.n,D=DATA.dict;
+function fmt(n){if(n==null||isNaN(n))return '-';n=Math.round(n);if(Math.abs(n)>=1e7)return (n/1e7).toFixed(2)+' Cr';if(Math.abs(n)>=1e5)return (n/1e5).toFixed(2)+' L';return n.toLocaleString('en-IN');}
+function fmtInt(n){return n==null?'-':Math.round(n).toLocaleString('en-IN');}
+function pct(a,b){return b?(100*a/b):0;}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function trunc(s,n){s=String(s);return s.length>n?s.slice(0,n-1)+'…':s;}
+var palette=['#F5C518','#2563eb','#23a55a','#e5484d','#8b5cf6','#06b6d4','#f97316','#ec4899'];
+var GEO=[['dv','Division'],['di','District'],['ta','Taluka'],['vi','Village'],['pn','Pincode']];
+var GEOMAX=GEO.length-1;
+var DKf={dv:'div',di:'dist',ta:'tal',vi:'vil',pn:'pin',pt:'ptype',ps:'pstatus',bk:'bank',cs:'cstatus'};
+var path=[];
+var viewDim='geo';
+var F={ptype:new Set(),pstatus:new Set(),cstatus:new Set(),cli:new Set(),bank:null,yrMin:null,yrMax:null};
+var sortKey='projects',sortDir=-1;
+var vilPin={};
+(function(){for(var i=0;i<N;i++){if(vilPin[C.vi[i]]===undefined)vilPin[C.vi[i]]=C.pn[i];}})();
+function dispName(field,code){var nm=D[DKf[field]][code];if(field==='vi'){var pc=vilPin[code];if(pc!=null&&D.pin[pc]&&D.pin[pc]!=='(Unknown)')nm=nm+' ('+D.pin[pc]+')';}return nm;}
+var trendSel=new Set(['reg']);
+var trendMonthYear=null;
+var MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function monthAgg(year){
+  var m=[];for(var k=0;k<12;k++)m.push({n:0,cli:0,land:0,units:0,carpet:0,carpetCnt:0,builtup:0,builtupCnt:0,cpuSum:0,cpuCnt:0});
+  for(var i=0;i<N;i++){
+    if(C.yr[i]!==year)continue;
+    if(!F.ptype.has(C.pt[i])||!F.pstatus.has(C.ps[i])||!F.cstatus.has(C.cs[i])||!F.cli.has(C.cl[i]))continue;
+    if(F.bank&&!F.bank.has(C.bk[i]))continue;
+    var ok=true;for(var k=0;k<path.length;k++){if(C[GEO[path[k].lvl][0]][i]!==path[k].code){ok=false;break;}}
+    if(!ok)continue;
+    var mo=C.mo[i];if(mo<1||mo>12)continue;var a=m[mo-1];
+    a.n++;if(C.cl[i]===1)a.cli++;a.land+=C.la[i];a.units+=C.un[i];
+    if(C.ca[i]!=null){a.carpet+=C.ca[i];a.carpetCnt++;if(C.un[i]>0){var c=C.ca[i]/C.un[i];if(c<=2000){a.cpuSum+=c;a.cpuCnt++;}}}
+    if(C.bu[i]!=null){a.builtup+=C.bu[i];a.builtupCnt++;}
+  }
+  return m;
+}
+var SERIES_DEFS=[
+  {key:'reg',name:'Registrations',color:'#2563eb',fmt:function(v){return fmtInt(v)+' projects';},val:function(a){return a.n||0;}},
+  {key:'cpu',name:'Avg Carpet / Unit',color:'#f97316',fmt:function(v){return fmt(v)+' sq. m';},val:function(a){return a.n?a.cpuSum/a.n:0;}},
+  {key:'carpet',name:'Avg Carpet Area',color:'#23a55a',fmt:function(v){return fmt(v)+' sq. m';},val:function(a){return a.n?a.carpet/a.n:0;}},
+  {key:'builtup',name:'Avg Built-Up',color:'#e5484d',fmt:function(v){return fmt(v)+' sq. m';},val:function(a){return a.n?a.builtup/a.n:0;}},
+  {key:'land',name:'Avg Land Area',color:'#8b5cf6',fmt:function(v){return fmt(v)+' sq. m';},val:function(a){return a.n?a.land/a.n:0;}},
+  {key:'rera',name:'RERA Easy Clientele',color:'#F5C518',fmt:function(v){return fmtInt(v)+' projects';},val:function(a){return a.cli||0;}}
+];
+
+function barH(items){
+  var W=480,rowH=32,padT=6,labelW=140,barX=labelW+12,barW=W-barX-54;
+  var H=padT*2+items.length*rowH;if(H<70)H=70;
+  var max=1;items.forEach(function(d){if(d.value>max)max=d.value;});
+  var s='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMinYMid meet" style="font:13px Segoe UI">';
+  items.forEach(function(d,i){var y=padT+i*rowH,cy=y+rowH/2,w=Math.max(3,d.value/max*barW);
+    s+='<text x="'+labelW+'" y="'+(cy+4)+'" text-anchor="end" fill="#374151">'+esc(trunc(d.label,19))+'</text>';
+    s+='<rect x="'+barX+'" y="'+(cy-8)+'" width="'+w+'" height="16" rx="4" fill="'+(d.color||'#F5C518')+'"></rect>';
+    s+='<text x="'+(barX+w+7)+'" y="'+(cy+4)+'" fill="#374151" font-weight="700">'+fmt(d.value)+'</text>';
+    if(d.code!=null)s+='<rect class="barclick" data-code="'+d.code+'" x="0" y="'+y+'" width="'+W+'" height="'+rowH+'" fill="transparent"><title>'+esc(d.label)+': '+fmtInt(d.value)+'</title></rect>';});
+  return s+'</svg>';
+}
+function donut(items,defLabel,idp){
+  var total=0;items.forEach(function(d){total+=d.value;});if(total<=0)total=1;
+  var cx=100,cy=100,r=92,ir=58,a0=-Math.PI/2,paths='';
+  items.forEach(function(d){var frac=d.value/total;if(frac<=0)return;var a1=a0+frac*2*Math.PI;var large=frac>0.5?1:0;
+    var x0=cx+r*Math.cos(a0),y0=cy+r*Math.sin(a0),x1=cx+r*Math.cos(a1),y1=cy+r*Math.sin(a1);
+    var xi0=cx+ir*Math.cos(a1),yi0=cy+ir*Math.sin(a1),xi1=cx+ir*Math.cos(a0),yi1=cy+ir*Math.sin(a0);
+    paths+='<path class="sl" data-l="'+esc(d.label)+'" data-v="'+d.value+'" data-p="'+(frac*100).toFixed(1)+'" d="M'+x0+' '+y0+' A'+r+' '+r+' 0 '+large+' 1 '+x1+' '+y1+' L'+xi0+' '+yi0+' A'+ir+' '+ir+' 0 '+large+' 0 '+xi1+' '+yi1+' Z" fill="'+d.color+'"></path>';
+    a0=a1;});
+  var ctr='<text class="cv" id="'+idp+'-v" x="100" y="93" text-anchor="middle" font-size="25">'+fmtInt(total)+'</text>'+
+          '<text class="cl" id="'+idp+'-l" x="100" y="113" text-anchor="middle" font-size="11">'+defLabel+'</text>'+
+          '<text class="cl" id="'+idp+'-p" x="100" y="129" text-anchor="middle" font-size="11.5" font-weight="700"></text>';
+  var svg='<div class="dsvg"><svg viewBox="0 0 200 200">'+paths+ctr+'</svg></div>';
+  var leg='<div class="legend">'+items.map(function(d){return '<div class="li"><span class="sw" style="background:'+d.color+'"></span><span class="lt">'+esc(d.label)+'</span></div><div class="lv"><b>'+fmtInt(d.value)+'</b><span class="muted">'+(d.value/total*100).toFixed(1)+'%</span></div>';}).join('')+'</div>';
+  return '<div class="donutwrap" data-total="'+total+'" data-def="'+esc(defLabel)+'" data-idp="'+idp+'">'+svg+leg+'</div>';
+}
+function wireDonut(containerId){
+  var box=document.getElementById(containerId).querySelector('.donutwrap');if(!box)return;
+  var idp=box.getAttribute('data-idp'),total=+box.getAttribute('data-total'),def=box.getAttribute('data-def');
+  var vEl=document.getElementById(idp+'-v'),lEl=document.getElementById(idp+'-l'),pEl=document.getElementById(idp+'-p');
+  box.querySelectorAll('.sl').forEach(function(p){
+    p.addEventListener('mouseenter',function(){vEl.textContent=fmtInt(+p.getAttribute('data-v'));lEl.textContent=trunc(p.getAttribute('data-l'),24);pEl.textContent=p.getAttribute('data-p')+'%';});
+    p.addEventListener('mouseleave',function(){vEl.textContent=fmtInt(total);lEl.textContent=def;pEl.textContent='';});
+  });
+}
+function lineChart(labels,values){
+  var W=1600,H=300,padL=64,padB=34,padT=18,padR=26;
+  var max=1;values.forEach(function(v){if(v>max)max=v;});
+  var plotW=W-padL-padR,plotH=H-padT-padB,n=labels.length;
+  var xs=labels.map(function(_,i){return padL+(n<=1?plotW/2:i/(n-1)*plotW);});
+  var ys=values.map(function(v){return padT+plotH-(v/max)*plotH;});
+  var grid='';for(var g=0;g<=4;g++){var gy=padT+plotH-(g/4)*plotH;grid+='<text x="'+(padL-8)+'" y="'+(gy+4)+'" text-anchor="end" fill="#9aa1ad" font-size="13">'+fmt(max*g/4)+'</text>';}
+  var pts=xs.map(function(x,i){return x+','+ys[i];}).join(' ');
+  var area=padL+','+(padT+plotH)+' '+pts+' '+xs[xs.length-1]+','+(padT+plotH);
+  var dots='',xl='';xs.forEach(function(x,i){dots+='<circle cx="'+x+'" cy="'+ys[i]+'" r="15" fill="transparent" data-tip="'+labels[i]+': '+fmtInt(values[i])+' registrations"></circle><circle cx="'+x+'" cy="'+ys[i]+'" r="5" fill="#2563eb" style="pointer-events:none"></circle>';xl+='<text x="'+x+'" y="'+(H-10)+'" text-anchor="middle" fill="#9aa1ad" font-size="13">'+labels[i]+'</text>';});
+  return '<svg viewBox="0 0 '+W+' '+H+'" style="font:12px Segoe UI">'+grid+'<polygon points="'+area+'" fill="rgba(37,99,235,.10)"/><polyline points="'+pts+'" fill="none" stroke="#2563eb" stroke-width="2.5"/>'+dots+xl+'</svg>';
+}
+function lineChartMulti(labels,series){
+  var W=1600,H=300,padL=54,padB=34,padT=18,padR=26;
+  var plotW=W-padL-padR,plotH=H-padT-padB,n=labels.length,single=series.length===1;
+  var xs=labels.map(function(_,i){return padL+(n<=1?plotW/2:i/(n-1)*plotW);});
+  var s0max=1;if(single){series[0].values.forEach(function(v){if(v>s0max)s0max=v;});}
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" style="font:12px Segoe UI">';
+  for(var g=0;g<=4;g++){var f=g/4,gy=padT+plotH-f*plotH;svg+='<text x="'+(padL-8)+'" y="'+(gy+4)+'" text-anchor="end" fill="#9aa1ad" font-size="12">'+(single?fmt(s0max*f):(Math.round(f*100)+'%'))+'</text>';}
+  series.forEach(function(sr){
+    var max=1;sr.values.forEach(function(v){if(v>max)max=v;});
+    var yy=sr.values.map(function(v){return padT+plotH-(v/max)*plotH;});
+    var pts=xs.map(function(x,i){return x+','+yy[i];}).join(' ');
+    if(single)svg+='<polygon points="'+padL+','+(padT+plotH)+' '+pts+' '+xs[xs.length-1]+','+(padT+plotH)+'" fill="rgba(37,99,235,.10)"/>';
+    svg+='<polyline points="'+pts+'" fill="none" stroke="'+sr.color+'" stroke-width="2.5"/>';
+    xs.forEach(function(x,i){svg+='<circle cx="'+x+'" cy="'+yy[i]+'" r="13" fill="transparent" data-tip="'+esc(sr.name)+' · '+labels[i]+': '+sr.fmt(sr.values[i])+'"></circle><circle cx="'+x+'" cy="'+yy[i]+'" r="4.5" fill="'+sr.color+'" style="pointer-events:none"></circle>';});
+  });
+  xs.forEach(function(x,i){svg+='<text x="'+x+'" y="'+(H-10)+'" text-anchor="middle" fill="#9aa1ad" font-size="13">'+labels[i]+'</text>';});
+  return svg+'</svg>';
+}
+function areaBar(items){
+  var W=760,padL=150,padR=64,padT=12,rowH=46;
+  var H=padT*2+items.length*rowH;if(H<80)H=80;
+  var barW=W-padL-padR,max=1;
+  items.forEach(function(d){max=Math.max(max,d.land,d.carpet,d.builtup);});
+  var ser=[['Land Area','land','#F5C518'],['Carpet Area','carpet','#2563eb'],['Built-Up Area','builtup','#23a55a']];
+  var leg='<div style="display:flex;gap:20px;margin-bottom:8px;font-size:12px;color:#374151">'+ser.map(function(se){return '<span style="display:inline-flex;align-items:center;gap:7px"><span style="width:12px;height:12px;border-radius:3px;background:'+se[2]+';display:inline-block"></span>'+se[0]+'</span>';}).join('')+'</div>';
+  var s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" preserveAspectRatio="xMidYMin meet" style="font:11px Segoe UI">';
+  items.forEach(function(d,i){var top=padT+i*rowH;
+    s+='<text x="'+(padL-8)+'" y="'+(top+rowH/2+1)+'" text-anchor="end" fill="#374151" font-weight="600">'+esc(trunc(d.label,18))+'</text>';
+    ser.forEach(function(se,si){var v=d[se[1]]||0,w=Math.max(1,v/max*barW),by=top+5+si*12;
+      s+='<rect class="gbar" x="'+padL+'" y="'+by+'" width="'+w+'" height="9" rx="2" fill="'+se[2]+'" data-tip="'+esc(d.label)+' — '+se[0]+': '+fmt(v)+' sq. m"></rect>';});});
+  s+='</svg>';
+  return leg+s;
+}
+function buildChecks(elId,dictKey,stateSet){var el=document.getElementById(elId);D[dictKey].forEach(function(name,i){var lab=document.createElement('label');lab.className='chk';var cb=document.createElement('input');cb.type='checkbox';cb.checked=true;cb.setAttribute('data-i',i);stateSet.add(i);cb.onchange=function(){cb.checked?stateSet.add(i):stateSet.delete(i);render();};lab.appendChild(cb);lab.appendChild(document.createTextNode(' '+name));el.appendChild(lab);});}
+buildChecks('fType','ptype',F.ptype);buildChecks('fPStatus','pstatus',F.pstatus);buildChecks('fCStatus','cstatus',F.cstatus);
+(function(){var el=document.getElementById('fCli');[['No',0],['Yes',1]].forEach(function(p){var lab=document.createElement('label');lab.className='chk';var cb=document.createElement('input');cb.type='checkbox';cb.checked=true;F.cli.add(p[1]);cb.onchange=function(){cb.checked?F.cli.add(p[1]):F.cli.delete(p[1]);render();};lab.appendChild(cb);lab.appendChild(document.createTextNode(' '+p[0]));el.appendChild(lab);});})();
+function syncChecks(elId,stateSet){document.getElementById(elId).querySelectorAll('input').forEach(function(cb){cb.checked=stateSet.has(+cb.getAttribute('data-i'));});}
+var years=Array.from(new Set(C.yr.filter(function(y){return y>0;}))).sort(function(a,b){return a-b;});
+var YR_MIN=years[0],YR_MAX=years[years.length-1];
+var MW_RE=[YR_MAX-3,YR_MAX-1],MW_PR=[YR_MAX-6,YR_MAX-4];  // last 3 full years vs prior 3 (YR_MAX partial/YTD)
+function mwLabel(w){return w[0]+'-'+String(w[1]).slice(2);}
+(function(){var fr=document.getElementById('footRange'),fc=document.getElementById('footCount');if(fr)fr.textContent=YR_MIN+'–'+YR_MAX;if(fc)fc.textContent=fmtInt(N);})();
+F.yrMin=years[0];F.yrMax=years[years.length-1];
+var yrMinSel=document.getElementById('yrMin'),yrMaxSel=document.getElementById('yrMax');
+years.forEach(function(y){yrMinSel.add(new Option(y,y));yrMaxSel.add(new Option(y,y));});
+yrMinSel.value=F.yrMin;yrMaxSel.value=F.yrMax;
+yrMinSel.onchange=function(){F.yrMin=+yrMinSel.value;if(F.yrMin>F.yrMax){F.yrMax=F.yrMin;yrMaxSel.value=F.yrMax;}render();};
+yrMaxSel.onchange=function(){F.yrMax=+yrMaxSel.value;if(F.yrMax<F.yrMin){F.yrMin=F.yrMax;yrMinSel.value=F.yrMin;}render();};
+document.getElementById('resetBtn').onclick=function(){document.querySelectorAll('.side input[type=checkbox]').forEach(function(cb){cb.checked=true;});F.ptype=new Set(D.ptype.map(function(_,i){return i;}));F.pstatus=new Set(D.pstatus.map(function(_,i){return i;}));F.cstatus=new Set(D.cstatus.map(function(_,i){return i;}));F.cli=new Set([0,1]);F.bank=null;F.yrMin=years[0];F.yrMax=years[years.length-1];yrMinSel.value=F.yrMin;yrMaxSel.value=F.yrMax;path=[];viewDim='geo';render();};
+document.getElementById('backBtn').onclick=function(){if(path.length){path.pop();render();}};
+(function(){
+  var host=document.getElementById('trendSeries');
+  SERIES_DEFS.forEach(function(s){var lab=document.createElement('label');
+    var cb=document.createElement('input');cb.type='checkbox';cb.checked=trendSel.has(s.key);
+    cb.onchange=function(){if(cb.checked)trendSel.add(s.key);else trendSel.delete(s.key);render();};
+    lab.appendChild(cb);var sw=document.createElement('span');sw.className='sw';sw.style.background=s.color;lab.appendChild(sw);
+    lab.appendChild(document.createTextNode(s.name));host.appendChild(lab);});
+  var tmin=document.getElementById('trYrMin'),tmax=document.getElementById('trYrMax');
+  years.forEach(function(y){tmin.add(new Option(y,y));tmax.add(new Option(y,y));});
+  tmin.value=F.yrMin;tmax.value=F.yrMax;
+  tmin.onchange=function(){F.yrMin=+tmin.value;if(F.yrMin>F.yrMax)F.yrMax=F.yrMin;yrMinSel.value=F.yrMin;yrMaxSel.value=F.yrMax;render();};
+  tmax.onchange=function(){F.yrMax=+tmax.value;if(F.yrMax<F.yrMin)F.yrMin=F.yrMax;yrMinSel.value=F.yrMin;yrMaxSel.value=F.yrMax;render();};
+  var tmy=document.getElementById('trMonthYear');tmy.add(new Option('Year-wise',''));
+  years.forEach(function(y){tmy.add(new Option('Months of '+y,y));});
+  tmy.onchange=function(){trendMonthYear=tmy.value?+tmy.value:null;render();};
+})();
+
+var DIMS=[['geo','Geographical'],['pt','Project Type'],['ps','Project Status'],['bk','Bank']];
+(function(){var el=document.getElementById('toggle');DIMS.forEach(function(d){var b=document.createElement('button');b.className='tg'+(d[0]===viewDim?' on':'');b.textContent=d[1];b.onclick=function(){viewDim=d[0];render();};b.setAttribute('data-dim',d[0]);el.appendChild(b);});})();
+function setToggle(){document.querySelectorAll('#toggle .tg').forEach(function(b){b.className='tg'+(b.getAttribute('data-dim')===viewDim?' on':'');});}
+
+function currentLevel(){return path.length;}
+function curField(){return viewDim==='geo'?GEO[Math.min(path.length,GEOMAX)][0]:viewDim;}
+function curDimLabel(){return viewDim==='geo'?GEO[Math.min(path.length,GEOMAX)][1]:({pt:'Project Type',ps:'Project Status',bk:'Bank'})[viewDim];}
+function passFilter(i){
+  if(!F.ptype.has(C.pt[i]))return false;
+  if(!F.pstatus.has(C.ps[i]))return false;
+  if(!F.cstatus.has(C.cs[i]))return false;
+  if(!F.cli.has(C.cl[i]))return false;
+  if(F.bank&&!F.bank.has(C.bk[i]))return false;
+  var y=C.yr[i];if(y<F.yrMin||y>F.yrMax)return false;
+  for(var k=0;k<path.length;k++){if(C[GEO[path[k].lvl][0]][i]!==path[k].code)return false;}
+  return true;
+}
+function aggregate(force){
+  var gf=force||curField();
+  var groups={},bankCnt={};
+  var tot={projects:0,units:0,land:0,carpet:0,carpetCnt:0,builtup:0,builtupCnt:0,cpuSum:0,cpuCnt:0,cliCnt:0,complaints:0,daysSum:0,daysCnt:0,completed:0,lapsed:0,active:0};
+  var typeCnt=D.ptype.map(function(){return 0;}),statusCnt=[0,0,0],yrMap={},yrAgg={},pinSet={};
+  for(var i=0;i<N;i++){
+    if(!passFilter(i))continue;
+    pinSet[C.pn[i]]=1;
+    var g=C[gf][i],o=groups[g];
+    if(!o){o={code:g,projects:0,units:0,land:0,carpet:0,carpetCnt:0,builtup:0,builtupCnt:0,cpuSum:0,cpuCnt:0,cliCnt:0,complaints:0,daysSum:0,daysCnt:0,completed:0,lapsed:0,active:0};groups[g]=o;}
+    o.projects++;tot.projects++;o.units+=C.un[i];tot.units+=C.un[i];o.land+=C.la[i];tot.land+=C.la[i];
+    if(C.ca[i]!=null){o.carpet+=C.ca[i];o.carpetCnt++;tot.carpet+=C.ca[i];tot.carpetCnt++;if(C.un[i]>0){var _cpu=C.ca[i]/C.un[i];if(_cpu<=2000){o.cpuSum+=_cpu;o.cpuCnt++;tot.cpuSum+=_cpu;tot.cpuCnt++;}}}
+    if(C.bu[i]!=null){o.builtup+=C.bu[i];o.builtupCnt++;tot.builtup+=C.bu[i];tot.builtupCnt++;}
+    o.complaints+=C.cp[i];tot.complaints+=C.cp[i];
+    if(C.dy[i]!=null){o.daysSum+=C.dy[i];o.daysCnt++;tot.daysSum+=C.dy[i];tot.daysCnt++;}
+    var cs=C.cs[i];statusCnt[cs]++;
+    if(cs===2){o.completed++;tot.completed++;}else if(cs===1){o.lapsed++;tot.lapsed++;}else{o.active++;tot.active++;}
+    if(C.cl[i]===1){tot.cliCnt++;o.cliCnt++;}
+    typeCnt[C.pt[i]]++;bankCnt[C.bk[i]]=(bankCnt[C.bk[i]]||0)+1;
+    var y=C.yr[i];yrMap[y]=(yrMap[y]||0)+1;
+    var ya=yrAgg[y];if(!ya){ya={n:0,cli:0,land:0,units:0,carpet:0,carpetCnt:0,builtup:0,builtupCnt:0,cpuSum:0,cpuCnt:0};yrAgg[y]=ya;}
+    ya.n++;if(C.cl[i]===1)ya.cli++;ya.land+=C.la[i];ya.units+=C.un[i];
+    if(C.ca[i]!=null){ya.carpet+=C.ca[i];ya.carpetCnt++;if(C.un[i]>0){var _yc=C.ca[i]/C.un[i];if(_yc<=2000){ya.cpuSum+=_yc;ya.cpuCnt++;}}}
+    if(C.bu[i]!=null){ya.builtup+=C.bu[i];ya.builtupCnt++;}
+  }
+  tot.pinCnt=Object.keys(pinSet).length;
+  return {groups:Object.keys(groups).map(function(k){return groups[k];}),tot:tot,typeCnt:typeCnt,statusCnt:statusCnt,yrMap:yrMap,yrAgg:yrAgg,bankCnt:bankCnt,gf:gf};
+}
+function enrich(A){var dk=DKf[A.gf];return A.groups.map(function(g){return {code:g.code,name:dispName(A.gf,g.code),projects:g.projects,units:g.projects?g.units/g.projects:0,land:g.projects?g.land/g.projects:0,carpet:g.projects?g.carpet/g.projects:0,builtup:g.projects?g.builtup/g.projects:0,cpu:g.projects?g.cpuSum/g.projects:0,cli:g.cliCnt,complaints:g.projects?g.complaints/g.projects:0,completed:g.completed,lapsed:g.lapsed,compRate:pct(g.completed,g.projects),lapseRate:pct(g.lapsed,g.projects),avgDays:g.daysCnt?g.daysSum/g.daysCnt:null};});}
+function scopeName(){return path.length?path[path.length-1].name:'Maharashtra (All Areas)';}
+function scopePathStr(){return path.length?path.map(function(p){return p.name;}).join(' / '):'All Maharashtra';}
+
+function renderChips(){
+  var el=document.getElementById('chips');var h='';
+  if(F.ptype.size<D.ptype.length)h+=chip('Type',Array.from(F.ptype).map(function(i){return D.ptype[i];}).join(', '),'pt');
+  if(F.pstatus.size<D.pstatus.length)h+=chip('Status',Array.from(F.pstatus).map(function(i){return D.pstatus[i];}).join(', '),'ps');
+  if(F.cstatus.size<D.cstatus.length)h+=chip('Current',Array.from(F.cstatus).map(function(i){return D.cstatus[i];}).join(', '),'cs');
+  if(F.bank)h+=chip('Bank',Array.from(F.bank).map(function(i){return D.bank[i];}).join(', '),'bk');
+  if(F.cli.size<2)h+=chip('Clientele',F.cli.has(1)?'Yes':'No','cli');
+  el.innerHTML=h;
+  el.querySelectorAll('.x').forEach(function(x){x.onclick=function(){var k=x.getAttribute('data-k');
+    if(k==='pt'){F.ptype=new Set(D.ptype.map(function(_,i){return i;}));syncChecks('fType',F.ptype);}
+    if(k==='ps'){F.pstatus=new Set(D.pstatus.map(function(_,i){return i;}));syncChecks('fPStatus',F.pstatus);}
+    if(k==='cs'){F.cstatus=new Set(D.cstatus.map(function(_,i){return i;}));syncChecks('fCStatus',F.cstatus);}
+    if(k==='bk'){F.bank=null;}
+    if(k==='cli'){F.cli=new Set([0,1]);document.querySelectorAll('#fCli input').forEach(function(c){c.checked=true;});}
+    render();};});
+}
+function chip(label,val,k){return '<span class="chip2">'+label+': <b>'+esc(trunc(val,28))+'</b><span class="x" data-k="'+k+'">×</span></span>';}
+
+function render(){
+  try{
+  document.getElementById('errbar').style.display='none';
+  setToggle();
+  var A=aggregate(),t=A.tot,dimLbl=curDimLabel();
+  document.getElementById('backBtn').disabled=path.length===0;
+  var cb=document.getElementById('crumb');cb.innerHTML='';
+  function mk(txt,fn,cur){var a=document.createElement(cur?'span':'a');a.textContent=txt;if(cur)a.className='cur';else a.onclick=fn;cb.appendChild(a);}
+  mk('Maharashtra',function(){path=[];render();},path.length===0);
+  path.forEach(function(p,idx){var s=document.createElement('span');s.className='sep';s.textContent=' > ';cb.appendChild(s);mk(p.name,function(){path=path.slice(0,idx+1);render();},idx===path.length-1);});
+  cb.appendChild((function(){var s=document.createElement('span');s.className='sep muted';s.textContent='   ('+fmtInt(t.projects)+' projects)';return s;})());
+  renderChips();
+  var kpiDefs=[['Projects',fmtInt(t.projects),'',''],['Avg Units / Project',fmt(t.projects?t.units/t.projects:0),'dwelling / plot units',''],['Avg Carpet / Unit',fmt(t.projects?t.cpuSum/t.projects:0),'sq. m per unit (project-wise)',''],['Avg Carpet Area',fmt(t.projects?t.carpet/t.projects:0),'sq. m / project',''],['Avg Built-Up Area',fmt(t.projects?t.builtup/t.projects:0),'sq. m / project',''],['Avg Land Area',fmt(t.projects?t.land/t.projects:0),'sq. m / project',''],['Completed',pct(t.completed,t.projects).toFixed(1)+'%',fmtInt(t.completed)+' projects','k-green'],['Lapsed',pct(t.lapsed,t.projects).toFixed(1)+'%',fmtInt(t.lapsed)+' projects','k-red'],['Avg Complaints / Project',(t.projects?t.complaints/t.projects:0).toFixed(2),fmtInt(t.complaints)+' total',''],['Avg Days to Complete',t.daysCnt?fmtInt(t.daysSum/t.daysCnt):'-',t.daysCnt?(t.daysSum/t.daysCnt/365).toFixed(1)+' yrs':'',''],['Active',pct(t.active,t.projects).toFixed(1)+'%',fmtInt(t.active)+' projects','k-blue'],['RERA Easy Clientele',fmtInt(t.cliCnt),pct(t.cliCnt,t.projects).toFixed(1)+'% of projects','k-yellow']];
+  document.getElementById('kpis').innerHTML=kpiDefs.map(function(k){return '<div class="kpi '+k[3]+'"><div class="lab">'+k[0]+'</div><div class="val">'+k[1]+'</div><div class="note">'+k[2]+'</div></div>';}).join('');
+  // trend: month-wise for a chosen year, else year-wise (multi-series, each normalized to its own max)
+  var trSel=document.getElementById('trMonthYear');if(trSel)trSel.value=(trendMonthYear||'');
+  (function(){var tmin=document.getElementById('trYrMin'),tmax=document.getElementById('trYrMax');if(tmin){tmin.value=F.yrMin;tmax.value=F.yrMax;tmin.disabled=tmax.disabled=!!trendMonthYear;}})();
+  if(trendMonthYear){
+    var mdata=monthAgg(trendMonthYear);
+    var mSeries=SERIES_DEFS.filter(function(s){return trendSel.has(s.key);}).map(function(s){return {name:s.name,color:s.color,fmt:s.fmt,values:mdata.map(function(a){return s.val(a);})};});
+    if(!mSeries.length)mSeries=[{name:'Registrations',color:'#2563eb',fmt:function(v){return fmtInt(v)+' projects';},values:mdata.map(function(a){return a.n;})}];
+    document.getElementById('timeChart').innerHTML=lineChartMulti(MONTHS,mSeries);
+    document.getElementById('trendNote').innerHTML='Month-wise for <b>'+trendMonthYear+'</b> ('+fmtInt(mdata.reduce(function(s,a){return s+a.n;},0))+' registrations)'+(mSeries.length>1?'  ·  each line indexed to its own max (0–100%)':'')+'.';
+  }else{
+  var ys=Object.keys(A.yrAgg).map(Number).sort(function(a,b){return a-b;});
+  var activeSeries=SERIES_DEFS.filter(function(s){return trendSel.has(s.key);}).map(function(s){return {name:s.name,color:s.color,fmt:s.fmt,values:ys.map(function(y){return s.val(A.yrAgg[y]||{});})};});
+  if(!activeSeries.length)activeSeries=[{name:'Registrations',color:'#2563eb',fmt:function(v){return fmtInt(v)+' projects';},values:ys.map(function(y){return (A.yrAgg[y]||{}).n||0;})}];
+  document.getElementById('timeChart').innerHTML=lineChartMulti(ys,activeSeries);
+  (function(){var peak=ys[0]||0;ys.forEach(function(y){if((A.yrMap[y]||0)>(A.yrMap[peak]||0))peak=y;});
+    var last=ys[ys.length-1],prev=ys[ys.length-2];
+    var yoy=(prev&&A.yrMap[prev])?(100*((A.yrMap[last]||0)-A.yrMap[prev])/A.yrMap[prev]):null;
+    document.getElementById('trendNote').innerHTML='Peak year <b>'+peak+'</b> ('+fmtInt(A.yrMap[peak]||0)+' registrations)'+(yoy==null?'':'  ·  latest YoY ('+prev+'→'+last+'): <b>'+(yoy>=0?'+':'')+yoy.toFixed(0)+'%</b>')+(activeSeries.length>1?'  ·  each line indexed to its own max (0–100%) for trend comparison':'')+'  ·  '+YR_MIN+' = launch backlog, '+YR_MAX+' = year-to-date.';})();
+  }
+  // groups (one dimension drives chart + cards + table together)
+  var groups=enrich(A);
+  groups.sort(function(a,b){var va=a[sortKey],vb=b[sortKey];if(va==null)va=-1;if(vb==null)vb=-1;return (va-vb)*sortDir;});
+  var byProj=groups.slice().sort(function(a,b){return b.projects-a.projects;});
+  var canDrill=(viewDim==='geo'&&currentLevel()<GEOMAX);
+  var clickable=(viewDim!=='geo')||canDrill;
+  // other-dimension graphs: the three dimensions NOT currently selected, within scope
+  var others=['geo','pt','ps','bk'].filter(function(d){return d!==viewDim;});
+  document.getElementById('t-others').textContent='Other dimensions — '+others.map(dimName).join('  ·  ')+' (within current scope)';
+  var host=document.getElementById('otherCharts');host.innerHTML='';
+  others.forEach(function(dimId,idx){
+    var card=document.createElement('div');card.className='card';
+    var isD=(dimId==='pt'||dimId==='ps');
+    card.innerHTML='<h2>'+esc(dimName(dimId))+' distribution'+(isD?'':' <span class="muted" style="font-weight:400">— top 5</span>')+'</h2><div class="chartbox" id="oc'+idx+'"></div>';
+    host.appendChild(card);
+    document.getElementById('oc'+idx).innerHTML=dimChart(distFor(dimId),isD,'oc'+idx);
+    if(isD)wireDonut('oc'+idx);
+  });
+  // drill pills + cascading location filter
+  renderDrillbar();renderGeoFilter();
+  // cards
+  var maxP=byProj.length?byProj[0].projects:1,LIM=48,shownC=byProj.slice(0,LIM);
+  var parentNm=path.length?path[path.length-1].name:'Maharashtra';
+  var hint=viewDim==='geo'?(canDrill?' - tap a card to drill into its '+GEO[Math.min(currentLevel()+1,3)][1].toLowerCase()+'s':'  (lowest level)'):' - tap a card to filter the whole dashboard, then drill geographically';
+  document.getElementById('t-cards').textContent='Explore by '+dimLbl+hint;
+  document.getElementById('geoCards').innerHTML=shownC.map(function(g){var share=pct(g.projects,t.projects);
+    return '<div class="gcard'+(clickable?'':' leaf')+'" data-code="'+g.code+'"><div class="nm"><span class="lt2">'+esc(g.name)+'</span><span class="nmr"><button class="cardmc" data-mc="'+g.code+'" title="Open Master Card for this">◧</button>'+(clickable?'<span class="ar">›</span>':'')+'</span></div><div class="big">'+fmtInt(g.projects)+'<small>projects</small></div><div class="share">'+share.toFixed(1)+'% of '+esc(viewDim==='geo'?parentNm:'total')+'</div><div class="mini"><span class="chip">Units <b>'+fmt(g.units)+'</b></span><span class="chip">Land <b>'+fmt(g.land)+'</b></span><span class="chip">Carpet <b>'+fmt(g.carpet)+'</b></span><span class="chip">Carpet/Unit <b>'+fmt(g.cpu)+'</b></span><span class="chip">Built-Up <b>'+fmt(g.builtup)+'</b></span><span class="chip">Days <b>'+(g.avgDays==null?'-':fmtInt(g.avgDays))+'</b></span><span class="chip">Complaints <b>'+g.complaints.toFixed(2)+'</b></span><span class="chip">RERA <b>'+fmtInt(g.cli)+'</b></span><span class="chip b">Active <b>'+Math.max(0,100-g.compRate-g.lapseRate).toFixed(0)+'%</b></span><span class="chip g">Done <b>'+g.compRate.toFixed(0)+'%</b></span><span class="chip r">Lapse <b>'+g.lapseRate.toFixed(0)+'%</b></span></div><div class="sharebar" style="width:'+(g.projects/maxP*100).toFixed(1)+'%"></div></div>';}).join('');
+  document.getElementById('cardsNote').textContent=byProj.length>LIM?('Showing top '+LIM+' of '+byProj.length+' '+dimLbl.toLowerCase()+'s - full list in the table below.'):(byProj.length+' '+dimLbl.toLowerCase()+(byProj.length===1?'':'s')+' in this view');
+  if(clickable){document.getElementById('geoCards').querySelectorAll('.gcard[data-code]').forEach(function(c){c.onclick=function(){clickItem(+c.getAttribute('data-code'));};});}
+  document.getElementById('geoCards').querySelectorAll('.cardmc[data-mc]').forEach(function(b){b.onclick=function(ev){ev.stopPropagation();masterForCard(+b.getAttribute('data-mc'));};});
+  // table
+  var cols=[['name',dimLbl],['projects','Projects'],['units','Avg Units'],['land','Avg Land Area'],['carpet','Avg Carpet Area'],['builtup','Avg Built-Up'],['compRate','Completed %'],['lapseRate','Lapsed %'],['complaints','Avg Complaints'],['avgDays','Avg Days']];
+  var thead=document.getElementById('thead');thead.innerHTML='';
+  cols.forEach(function(c){var th=document.createElement('th');th.textContent=c[1]+(sortKey===c[0]?(sortDir<0?' v':' ^'):'');th.onclick=function(){if(sortKey===c[0])sortDir*=-1;else{sortKey=c[0];sortDir=-1;}render();};thead.appendChild(th);});
+  var tb=document.getElementById('tbody');tb.innerHTML='';
+  groups.forEach(function(g){var tr=document.createElement('tr');if(!clickable)tr.className='leaf';
+    var cells=[esc(g.name)+(clickable?'<span class="drill">'+(viewDim==='geo'?'drill':'filter')+'</span>':''),fmtInt(g.projects),fmt(g.units),fmt(g.land),fmt(g.carpet),fmt(g.builtup),
+      '<span class="pill" style="background:'+(g.compRate>=50?'rgba(35,165,90,.16)':'#f1f1f3')+';color:'+(g.compRate>=50?'#1c8048':'#6b7280')+'">'+g.compRate.toFixed(0)+'%</span>',
+      '<span class="pill" style="background:'+(g.lapseRate>=30?'rgba(229,72,77,.16)':'#f1f1f3')+';color:'+(g.lapseRate>=30?'#c43b2f':'#6b7280')+'">'+g.lapseRate.toFixed(0)+'%</span>',
+      g.complaints.toFixed(2),g.avgDays==null?'-':fmtInt(g.avgDays)];
+    cells.forEach(function(c){var td=document.createElement('td');td.innerHTML=c;tr.appendChild(td);});
+    if(clickable)tr.onclick=function(){clickItem(g.code);};tb.appendChild(tr);});
+  document.getElementById('t-table').innerHTML='Breakdown by '+dimLbl+' <span class="muted" style="font-weight:400">('+groups.length+' '+dimLbl.toLowerCase()+'s'+(clickable?', click a row':'')+')</span>';
+  }catch(err){var b=document.getElementById('errbar');b.style.display='block';b.textContent='Render error: '+err.message+'\n'+(err.stack||'');}
+}
+function clickItem(code){
+  if(code==null||isNaN(code))return;
+  if(viewDim==='geo'){if(currentLevel()>=GEOMAX)return;path.push({lvl:currentLevel(),code:code,name:dispName(GEO[currentLevel()][0],code)});sortKey='projects';sortDir=-1;render();return;}
+  if(viewDim==='pt'){F.ptype=new Set([code]);syncChecks('fType',F.ptype);}
+  else if(viewDim==='ps'){F.pstatus=new Set([code]);syncChecks('fPStatus',F.pstatus);}
+  else if(viewDim==='bk'){F.bank=new Set([code]);}
+  viewDim='geo';sortKey='projects';sortDir=-1;render();
+}
+function masterForCard(code){
+  if(code==null||isNaN(code))return;
+  if(viewDim==='geo'){var lvl=currentLevel();if(lvl<=GEOMAX)path.push({lvl:lvl,code:code,name:dispName(GEO[lvl][0],code)});}
+  else if(viewDim==='pt'){F.ptype=new Set([code]);syncChecks('fType',F.ptype);viewDim='geo';}
+  else if(viewDim==='ps'){F.pstatus=new Set([code]);syncChecks('fPStatus',F.pstatus);viewDim='geo';}
+  else if(viewDim==='bk'){F.bank=new Set([code]);viewDim='geo';}
+  sortKey='projects';sortDir=-1;render();buildMasterCard();
+}
+function dimChart(byProj,isDonut,idp){
+  if(!byProj.length)return '<div class="muted" style="padding:24px">No data in this view.</div>';
+  if(isDonut)return donut(byProj.slice(0,14).map(function(g,i){return {label:g.name,value:g.projects,color:palette[i%palette.length]};}),'Projects',idp||'dc');
+  return barH(byProj.slice(0,5).map(function(g,i){return {label:g.name,value:g.projects,code:g.code,color:palette[i%palette.length]};}));
+}
+function dimName(dimId){return dimId==='geo'?GEO[Math.min(path.length,GEOMAX)][1]:({pt:'Project Type',ps:'Project Status',bk:'Bank'})[dimId];}
+function dimFilterId(dimId){return dimId;}
+function distFor(dimId){
+  var field=dimId==='geo'?GEO[Math.min(path.length,GEOMAX)][0]:dimId,AA=aggregate(field),dk=DKf[field];
+  return AA.groups.map(function(g){return {name:D[dk][g.code],projects:g.projects,code:g.code};}).sort(function(a,b){return b.projects-a.projects;});
+}
+function geoChildren(lvl){
+  var field=GEO[lvl][0],set={};
+  for(var i=0;i<N;i++){var ok=true;
+    for(var k=0;k<lvl;k++){if(C[GEO[k][0]][i]!==path[k].code){ok=false;break;}}
+    if(ok)set[C[field][i]]=1;}
+  var dk=DKf[field];
+  return Object.keys(set).map(Number).sort(function(a,b){return String(D[dk][a]).localeCompare(String(D[dk][b]));});
+}
+function buildPathTo(lvl,code){
+  var field=GEO[lvl][0];
+  for(var i=0;i<N;i++){if(C[field][i]===code){
+    var p=[];for(var l=0;l<=lvl;l++){var f=GEO[l][0];p.push({lvl:l,code:C[f][i],name:dispName(f,C[f][i])});}return p;}}
+  return [];
+}
+function renderGeoFilter(){
+  var host=document.getElementById('geoFilter');host.innerHTML='';
+  for(var lvl=0;lvl<GEO.length;lvl++){
+    if(lvl>path.length)break;
+    var field=GEO[lvl][0],opts=geoChildren(lvl),dk=DKf[field];
+    var sel=document.createElement('select');sel.add(new Option(GEO[lvl][1]+'…',''));
+    opts.forEach(function(c){sel.add(new Option(D[dk][c],c));});
+    sel.value=(path[lvl]?path[lvl].code:'');
+    (function(lvl){sel.onchange=function(){
+      if(this.value==='')path=path.slice(0,lvl);
+      else{path=path.slice(0,lvl);path.push({lvl:lvl,code:+this.value,name:dispName(GEO[lvl][0],+this.value)});}
+      viewDim='geo';sortKey='projects';sortDir=-1;render();};})(lvl);
+    host.appendChild(sel);
+  }
+}
+function renderDrillbar(){
+  var bar=document.getElementById('drillbar');bar.innerHTML='';
+  var back=document.createElement('button');back.className='drillback';back.innerHTML='‹ Back';back.disabled=path.length===0;
+  back.onclick=function(){if(path.length){path.pop();render();}};bar.appendChild(back);
+  var root=document.createElement('span');root.className='dpill root';root.textContent='Maharashtra';
+  root.onclick=function(){path=[];render();};bar.appendChild(root);
+  path.forEach(function(p,idx){var pill=document.createElement('span');pill.className='dpill'+(idx===path.length-1?' cur':'');
+    pill.innerHTML=esc(p.name)+' <span class="x">×</span>';
+    pill.querySelector('.x').onclick=function(){path=path.slice(0,idx);render();};
+    bar.appendChild(pill);});
+  // cancel pills for the non-geo dimension filters (Project Type / Project Status / Bank)
+  function fpill(label,val,clear){var pill=document.createElement('span');pill.className='dpill';
+    pill.innerHTML='<span style="color:var(--yellow)">'+label+':</span> '+esc(trunc(val,22))+' <span class="x">×</span>';
+    pill.querySelector('.x').onclick=function(){clear();render();};bar.appendChild(pill);}
+  if(F.ptype.size<D.ptype.length)fpill('Type',Array.from(F.ptype).map(function(i){return D.ptype[i];}).join(', '),function(){F.ptype=new Set(D.ptype.map(function(_,i){return i;}));syncChecks('fType',F.ptype);});
+  if(F.pstatus.size<D.pstatus.length)fpill('Status',Array.from(F.pstatus).map(function(i){return D.pstatus[i];}).join(', '),function(){F.pstatus=new Set(D.pstatus.map(function(_,i){return i;}));syncChecks('fPStatus',F.pstatus);});
+  if(F.bank)fpill('Bank',Array.from(F.bank).map(function(i){return D.bank[i];}).join(', '),function(){F.bank=null;});
+}
+var searchIdx=[];
+(function(){
+  ['dv','di','ta','vi','pn'].forEach(function(f,lvl){D[DKf[f]].forEach(function(nm,code){if(nm&&nm!=='(Unknown)')searchIdx.push({label:nm+'  ·  '+GEO[lvl][1],name:nm,tag:GEO[lvl][1],type:'geo',lvl:lvl,code:code});});});
+  D.bank.forEach(function(nm,code){if(nm&&nm!=='(Unknown)')searchIdx.push({label:nm+'  ·  Bank',name:nm,tag:'Bank',type:'bank',code:code});});
+})();
+function applyEntry(e){
+  if(e.type==='geo'){var p=buildPathTo(e.lvl,e.code);if(p.length)path=p;F.bank=null;viewDim='geo';}
+  else{F.bank=new Set([e.code]);viewDim='geo';}
+  sortKey='projects';sortDir=-1;render();
+  var A=aggregate(),t=A.tot;
+  document.getElementById('searchAns').innerHTML='<span class="hl">'+esc(e.name)+'</span> ('+esc(e.tag)+') — <b>'+fmtInt(t.projects)+'</b> projects · <b>'+pct(t.completed,t.projects).toFixed(1)+'%</b> completed · <b>'+pct(t.lapsed,t.projects).toFixed(1)+'%</b> lapsed · avg <b>'+fmt(t.projects?t.units/t.projects:0)+'</b> units/project. The report below reflects this scope.';
+}
+function renderSug(q){
+  var sug=document.getElementById('searchSug');q=(q||'').trim().toLowerCase();
+  if(q.length<2){sug.style.display='none';sug.innerHTML='';return;}
+  var pre=[],mid=[];
+  for(var i=0;i<searchIdx.length&&(pre.length+mid.length)<200;i++){var p=searchIdx[i].name.toLowerCase().indexOf(q);if(p===0)pre.push(i);else if(p>0)mid.push(i);}
+  var list=pre.concat(mid).slice(0,8);
+  if(!list.length){sug.innerHTML='<div class="it muted">No match for “'+esc(q)+'”</div>';sug.style.display='block';return;}
+  sug.innerHTML=list.map(function(gi){var e=searchIdx[gi];return '<div class="it" data-i="'+gi+'"><b>'+esc(e.name)+'</b> <span class="muted">· '+esc(e.tag)+'</span></div>';}).join('');
+  sug.style.display='block';
+  sug.querySelectorAll('.it[data-i]').forEach(function(it){it.onmousedown=function(ev){ev.preventDefault();var e=searchIdx[+it.getAttribute('data-i')];document.getElementById('searchBox').value=e.name;sug.style.display='none';applyEntry(e);};});
+}
+function doSearch(q){
+  var ans=document.getElementById('searchAns');
+  if(!q||!q.trim()){ans.innerHTML='';return;}
+  q=q.trim();var lq=q.toLowerCase(),e=null,i;
+  for(i=0;i<searchIdx.length;i++){if(searchIdx[i].name.toLowerCase()===lq){e=searchIdx[i];break;}}
+  if(!e)for(i=0;i<searchIdx.length;i++){if(searchIdx[i].name.toLowerCase().indexOf(lq)===0){e=searchIdx[i];break;}}
+  if(!e){ans.innerHTML='<span class="muted">No match for “'+esc(q)+'”. Try a district, taluka, village, pincode or bank name.</span>';return;}
+  applyEntry(e);
+}
+(function(){var sb=document.getElementById('searchBox'),cl=document.getElementById('searchClear');
+  function toggleClear(){cl.style.display=sb.value?'inline-block':'none';}
+  sb.addEventListener('input',function(){toggleClear();renderSug(this.value);});
+  sb.addEventListener('focus',function(){if(this.value)renderSug(this.value);});
+  sb.addEventListener('blur',function(){setTimeout(function(){document.getElementById('searchSug').style.display='none';},160);});
+  sb.addEventListener('keydown',function(ev){if(ev.key==='Enter'){document.getElementById('searchSug').style.display='none';doSearch(this.value);}else if(ev.key==='Escape'){document.getElementById('searchSug').style.display='none';}});
+  cl.onclick=function(){sb.value='';document.getElementById('searchSug').style.display='none';document.getElementById('searchAns').innerHTML='';toggleClear();sb.focus();};
+})();
+function activeFilterDesc(){var parts=[];
+  if(F.ptype.size<D.ptype.length)parts.push('Type: '+Array.from(F.ptype).map(function(i){return D.ptype[i];}).join(', '));
+  if(F.pstatus.size<D.pstatus.length)parts.push('Status: '+Array.from(F.pstatus).map(function(i){return D.pstatus[i];}).join(', '));
+  if(F.cstatus.size<D.cstatus.length)parts.push('Current: '+Array.from(F.cstatus).map(function(i){return D.cstatus[i];}).join(', '));
+  if(F.bank)parts.push('Bank: '+Array.from(F.bank).map(function(i){return D.bank[i];}).join(', '));
+  if(F.cli.size<2)parts.push('Clientele: '+(F.cli.has(1)?'Yes':'No'));
+  parts.push('Years '+F.yrMin+'-'+F.yrMax);return parts.join('  ·  ');}
+function kbox(l,v,n){return '<div class="kbox"><div class="l">'+l+'</div><div class="v">'+v+'</div><div class="n">'+n+'</div></div>';}
+function buildReport(){
+  var gfield=GEO[Math.min(currentLevel(),GEOMAX)][0];
+  var A=aggregate(gfield),t=A.tot,groups=enrich(A);
+  var subLabel=GEO[Math.min(currentLevel(),GEOMAX)][1];
+  var byProj=groups.slice().sort(function(a,b){return b.projects-a.projects;});
+  var P=t.projects||1;
+  var top3=byProj.slice(0,3).reduce(function(s,g){return s+g.projects;},0);
+  var top5=byProj.slice(0,5).reduce(function(s,g){return s+g.projects;},0);
+  var ys=Object.keys(A.yrMap).map(Number).sort(function(a,b){return a-b;});
+  var peakY=ys[0]||0;ys.forEach(function(y){if(A.yrMap[y]>(A.yrMap[peakY]||0))peakY=y;});
+  function sumY(a,b){var s=0;for(var y=a;y<=b;y++)s+=(A.yrMap[y]||0);return s;}
+  var recent=sumY(MW_RE[0],MW_RE[1]),prior=sumY(MW_PR[0],MW_PR[1]),momentum=prior>0?(100*(recent-prior)/prior):0;
+  var compRate=pct(t.completed,P),lapseRate=pct(t.lapsed,P),activeRate=pct(t.active,P),avgDays=t.daysCnt?t.daysSum/t.daysCnt:0;
+  var minN=Math.max(15,Math.round(P*0.01)),elig=byProj.filter(function(g){return g.projects>=minN;});
+  var risk=elig.slice().sort(function(a,b){return b.lapseRate-a.lapseRate;}).slice(0,5);
+  var reliable=elig.slice().sort(function(a,b){return b.compRate-a.compRate;}).slice(0,5);
+  var biggest=byProj.slice(0,5);
+  var typeRows=D.ptype.map(function(nm,i){return {nm:nm,c:A.typeCnt[i]};}).sort(function(a,b){return b.c-a.c;});
+  var resShare=pct((A.typeCnt[D.ptype.indexOf('Residential / Group Housing')]||0),P);
+  var bk=Object.keys(A.bankCnt).map(function(k){return {name:D.bank[+k],c:A.bankCnt[k]};}).sort(function(a,b){return b.c-a.c;}).slice(0,5);
+  var dd=currentLevel()<GEOMAX;
+  var h='';
+  h+='<div class="rhead"><div class="rlogo"><img class="rlogoimg" src="__LOGO_LIGHT__" alt="RERA Easy"></div><div style="text-align:right;font-size:11px;color:#6b7a90">Report generated<br><b style="color:#171717">'+new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})+'</b></div></div>';
+  h+='<h2 class="title">Market Analysis - '+esc(scopeName())+'</h2>';
+  h+='<div class="scopemeta">Scope: '+esc(scopePathStr())+'  |  '+esc(activeFilterDesc())+'</div>';
+  h+='<h3>1. Executive Summary</h3>';
+  h+='<p><b>'+esc(scopeName())+'</b> records <b>'+fmtInt(P)+' RERA-registered projects</b> in scope, representing <b>'+fmt(t.units)+' units</b> across <b>'+fmt(t.carpet)+' sq. m</b> of carpet area and <b>'+fmt(t.builtup)+' sq. m</b> of sanctioned built-up area. The market is '+(resShare>=55?'predominantly residential':'a mixed-use market')+', with residential / group housing at <b>'+resShare.toFixed(0)+'%</b> of registrations. Delivery shows a <b>'+compRate.toFixed(1)+'% completion rate</b> and <b>'+lapseRate.toFixed(1)+'% lapse rate</b>, averaging <b>'+fmtInt(avgDays)+' days ('+(avgDays/365).toFixed(1)+' years)</b> to complete. Registration momentum (2023-25 vs 2020-22) is <b class="'+(momentum>=0?'pos':'neg')+'">'+(momentum>=0?'+':'')+momentum.toFixed(0)+'%</b>.</p>';
+  h+='<div class="kgrid">'+kbox('Registered Projects',fmtInt(P),'')+kbox('Total Units',fmt(t.units),(t.units/P).toFixed(0)+' avg / project')+kbox('Carpet Area',fmt(t.carpet),'sq. m')+kbox('Completion Rate',compRate.toFixed(1)+'%',fmtInt(t.completed)+' completed')+kbox('Lapse Rate',lapseRate.toFixed(1)+'%',fmtInt(t.lapsed)+' lapsed')+kbox('Avg. Completion',(avgDays/365).toFixed(1)+' yrs',fmtInt(avgDays)+' days')+'</div>';
+  h+='<h3>2. Market Size & Supply Composition</h3>';
+  h+='<table><thead><tr><th>Project Type</th><th>Projects</th><th>Share</th></tr></thead><tbody>'+typeRows.map(function(r){return '<tr><td>'+esc(r.nm)+'</td><td>'+fmtInt(r.c)+'</td><td>'+pct(r.c,P).toFixed(1)+'%</td></tr>';}).join('')+'</tbody></table>';
+  h+='<p>Average project size is <b>'+(t.units/P).toFixed(0)+' units</b> and <b>'+fmt(t.carpet/P)+' sq. m</b> of carpet area. Total land area in scope is <b>'+fmt(t.land)+' sq. m</b>.</p>';
+  h+='<h3>3. Registration Trend & Demand Momentum</h3>';
+  h+='<table><thead><tr><th>Year</th>'+ys.map(function(y){return '<th>'+y+'</th>';}).join('')+'</tr></thead><tbody><tr><td>New registrations</td>'+ys.map(function(y){return '<td>'+fmtInt(A.yrMap[y]||0)+'</td>';}).join('')+'</tr></tbody></table>';
+  h+='<p>Peak year in scope was <b>'+peakY+'</b> ('+fmtInt(A.yrMap[peakY])+' projects). '+YR_MIN+' reflects the MahaRERA launch backlog; trend is most reliable from '+(YR_MIN+1)+' on. Last three full years ('+mwLabel(MW_RE)+': <b>'+fmtInt(recent)+'</b>) vs prior three ('+mwLabel(MW_PR)+': <b>'+fmtInt(prior)+'</b>) moved <b class="'+(momentum>=0?'pos':'neg')+'">'+(momentum>=0?'+':'')+momentum.toFixed(0)+'%</b>. '+YR_MAX+' is year-to-date.</p>';
+  if(dd){h+='<h3>4. '+subLabel+'-wise Breakdown</h3>';
+    h+='<p>Top 3 '+subLabel.toLowerCase()+'s = <b>'+pct(top3,P).toFixed(1)+'%</b> of scope; top 5 = <b>'+pct(top5,P).toFixed(1)+'%</b> - '+(pct(top5,P)>=65?'a highly concentrated market.':'a relatively distributed market.')+'</p>';
+    h+='<table><thead><tr><th>'+subLabel+'</th><th>Projects</th><th>Share</th><th>Avg Units</th><th>Avg Carpet</th><th>Compl.%</th><th>Lapse%</th><th>Avg Cmpl</th><th>Avg Days</th></tr></thead><tbody>'+byProj.slice(0,15).map(function(g){return '<tr><td>'+esc(g.name)+'</td><td>'+fmtInt(g.projects)+'</td><td>'+pct(g.projects,P).toFixed(1)+'%</td><td>'+fmt(g.units)+'</td><td>'+fmt(g.carpet)+'</td><td>'+g.compRate.toFixed(0)+'%</td><td>'+g.lapseRate.toFixed(0)+'%</td><td>'+g.complaints.toFixed(2)+'</td><td>'+(g.avgDays==null?'-':fmtInt(g.avgDays))+'</td></tr>';}).join('')+'</tbody></table>';}
+  h+='<h3>'+(dd?'5':'4')+'. Top Lending Banks</h3>';
+  h+='<table><thead><tr><th>Bank</th><th>Projects</th><th>Share</th></tr></thead><tbody>'+bk.map(function(b){return '<tr><td>'+esc(b.name)+'</td><td>'+fmtInt(b.c)+'</td><td>'+pct(b.c,P).toFixed(1)+'%</td></tr>';}).join('')+'</tbody></table>';
+  h+='<h3>'+(dd?'6':'5')+'. Delivery Health & Risk</h3>';
+  h+='<p>Of '+fmtInt(P)+' projects, <b class="pos">'+fmtInt(t.completed)+' ('+compRate.toFixed(1)+'%)</b> completed, <b>'+fmtInt(t.active)+' ('+activeRate.toFixed(1)+'%)</b> active, and <b class="neg">'+fmtInt(t.lapsed)+' ('+lapseRate.toFixed(1)+'%)</b> lapsed. Complaints total <b>'+fmtInt(t.complaints)+'</b> ('+pct(t.complaints,P).toFixed(2)+' per project).</p>';
+  if(dd&&risk.length){h+='<p><span class="flag neg">Higher-risk '+subLabel.toLowerCase()+'s (lapse rate, >='+minN+' projects):</span></p><ul>'+risk.map(function(g){return '<li><b>'+esc(g.name)+'</b> - '+g.lapseRate.toFixed(0)+'% lapsed, '+g.compRate.toFixed(0)+'% completed ('+fmtInt(g.projects)+' projects)</li>';}).join('')+'</ul>';
+    h+='<p><span class="flag pos">Most reliable delivery:</span></p><ul>'+reliable.map(function(g){return '<li><b>'+esc(g.name)+'</b> - '+g.compRate.toFixed(0)+'% completed, '+g.lapseRate.toFixed(0)+'% lapsed ('+fmtInt(g.projects)+' projects)</li>';}).join('')+'</ul>';}
+  h+='<h3>'+(dd?'7':'6')+'. Opportunity & BD Recommendations</h3><ul>';
+  if(dd&&biggest.length)h+='<li><b>Anchor markets:</b> '+biggest.map(function(g){return esc(g.name)+' ('+pct(g.projects,P).toFixed(0)+'%)';}).join(', ')+' carry the bulk of supply - prioritise for volume campaigns.</li>';
+  if(dd){var hb=elig.slice().sort(function(a,b){return b.projects-a.projects;}).filter(function(g){return g.compRate>=compRate&&g.lapseRate<=lapseRate;}).slice(0,4);
+    if(hb.length)h+='<li><b>Quality-growth targets:</b> '+hb.map(function(g){return esc(g.name);}).join(', ')+' combine scale with strong delivery - ideal for premium positioning.</li>';
+    if(risk.length)h+='<li><b>Diligence flags:</b> caution in '+risk.slice(0,3).map(function(g){return esc(g.name);}).join(', ')+' (high lapse) - use delivery certainty as a differentiator.</li>';}
+  h+='<li><b>Banking relationships:</b> '+bk.slice(0,3).map(function(b){return esc(b.name);}).join(', ')+' are the most active project lenders in scope - useful for channel partnerships.</li>';
+  h+='<li><b>Demand signal:</b> momentum '+(momentum>=0?'positive (+'+momentum.toFixed(0)+'%)':momentum.toFixed(0)+'%')+' - '+(momentum>=0?'lean into expansion narratives.':'position around absorption and completion-led demand.')+'</li>';
+  h+='<li><b>Product mix:</b> residential at '+resShare.toFixed(0)+'% - '+(resShare>=60?'core focus; commercial/mixed a niche.':'meaningful non-residential activity worth dedicated outreach.')+'</li>';
+  h+='</ul>';
+  h+='<div class="rfoot"><span>RERA Easy - Confidential | Pune +91 91384 90809 · Mumbai +91 99879 57851</span><span>Source: MahaRERA registry, 2017-2026</span></div>';
+  document.getElementById('reportSheet').innerHTML=h;
+  document.getElementById('rtLabel').textContent='Report - '+scopeName();
+  document.getElementById('reportView').classList.add('open');document.getElementById('reportView').scrollTop=0;
+}
+document.getElementById('genReportBtn').onclick=buildReport;
+document.getElementById('rClose').onclick=function(){document.getElementById('reportView').classList.remove('open');};
+document.getElementById('rPrint').onclick=function(){window.print();};
+
+function countUp(el){
+  var target=parseFloat(el.getAttribute('data-count'))||0,fid=el.getAttribute('data-fmt'),dur=900,t0=Date.now();
+  function f(v){if(fid==='int')return fmtInt(v);if(fid==='dec1')return v.toFixed(1);return fmt(v);}
+  (function step(){var p=Math.min(1,(Date.now()-t0)/dur),e=1-Math.pow(1-p,3);el.textContent=f(target*e);if(p<1)requestAnimationFrame(step);else el.textContent=f(target);})();
+}
+function mck(l,val,fid,n){return '<div class="mc-kpi"><div class="l">'+l+'</div><div class="v" data-count="'+val+'" data-fmt="'+fid+'">0</div><div class="n">'+n+'</div><div class="bar"></div></div>';}
+function mrow(l,v,n,c){return '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)"><span style="font-size:12.5px">'+l+'<br><span class="muted" style="font-size:10.5px">'+n+'</span></span><b style="font-size:17px'+(c?';color:'+c:'')+'">'+v+'</b></div>';}
+function countForPath(prefix){var saved=path;path=prefix;var c=0;for(var i=0;i<N;i++){if(passFilter(i))c++;}path=saved;return c;}
+function drillChain(scopePath){
+  var rows=[{name:'Maharashtra',level:'State',projects:countForPath([]),pctOfParent:100,parent:null}];
+  var prev=rows[0].projects,prevName='Maharashtra';
+  for(var i=0;i<scopePath.length;i++){var cnt=countForPath(scopePath.slice(0,i+1));
+    rows.push({name:scopePath[i].name,level:GEO[scopePath[i].lvl][1],projects:cnt,pctOfParent:prev?100*cnt/prev:0,parent:prevName});
+    prev=cnt;prevName=scopePath[i].name;}
+  return rows;
+}
+function masterCardHTML(scopePath,pfx){
+  var saved=path;path=scopePath||[];
+  var savedCli=F.cli;if(masterReraOnly)F.cli=new Set([1]);
+  var lvl=path.length,gfield=GEO[Math.min(lvl,GEOMAX)][0];
+  var A=aggregate(gfield),t=A.tot,groups=enrich(A),P=t.projects||1;
+  var byProj=groups.slice().sort(function(a,b){return b.projects-a.projects;});
+  var subLabel=GEO[Math.min(lvl,GEOMAX)][1];
+  var ys=Object.keys(A.yrMap).map(Number).sort(function(a,b){return a-b;});
+  var peakY=ys[0]||0;ys.forEach(function(y){if((A.yrMap[y]||0)>(A.yrMap[peakY]||0))peakY=y;});
+  function sumY(a,b){var s=0;for(var y=a;y<=b;y++)s+=(A.yrMap[y]||0);return s;}
+  var recent=sumY(MW_RE[0],MW_RE[1]),prior=sumY(MW_PR[0],MW_PR[1]),momentum=prior>0?(100*(recent-prior)/prior):0;
+  var compRate=pct(t.completed,P),lapseRate=pct(t.lapsed,P),activeRate=pct(t.active,P);
+  var bk=Object.keys(A.bankCnt).map(function(k){return {name:D.bank[+k],c:A.bankCnt[k]};}).sort(function(a,b){return b.c-a.c;}).slice(0,5);
+  var typeMix=D.ptype.map(function(nm,i){return {label:nm,value:A.typeCnt[i],color:palette[i%palette.length]};}).filter(function(d){return d.value>0;});
+  var avgUnits=t.projects?t.units/t.projects:0,avgLand=t.projects?t.land/t.projects:0,avgCarpet=t.projects?t.carpet/t.projects:0,avgBuilt=t.projects?t.builtup/t.projects:0,avgCpu=t.projects?t.cpuSum/t.projects:0,avgDays=t.daysCnt?t.daysSum/t.daysCnt:0,avgCmpl=t.projects?t.complaints/t.projects:0;
+  var chain=drillChain(path),scName=scopeName(),scPath=scopePathStr(),scFilt=activeFilterDesc();
+  var h='<div class="mcard" id="'+pfx+'Wrap">';
+  h+='<div class="mc-head"><div><div class="mc-brand"><img class="mclogoimg" src="__LOGO_DARK__" alt="RERA Easy"></div>';
+  h+='<div class="mc-title">'+esc(scName)+'</div>';
+  h+='<div class="mc-sub">'+esc(scPath)+'  ·  '+esc(scFilt)+'</div><span class="mc-tag">'+(masterReraOnly?'RERA EASY CLIENTELE SNAPSHOT':'SUPPLY MARKET SNAPSHOT')+'</span></div>';
+  h+='<div style="text-align:right;color:#b8bcc4;font-size:11px">Generated<br><b style="color:#fff">'+new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})+'</b></div></div>';
+  h+='<div class="mc-body">';
+  h+='<div class="mc-sect" style="animation-delay:.05s"><h3>Supply at a glance</h3><div class="mc-kpis">'+
+     mck('Registered Projects',P,'int','in scope')+mck('Avg Units / Project',avgUnits,'fmt','dwelling / plot')+
+     mck('Avg Carpet / Unit',avgCpu,'fmt','sq. m per unit')+mck('Avg Carpet Area',avgCarpet,'fmt','sq. m')+
+     mck('Avg Built-Up',avgBuilt,'fmt','sq. m')+mck('Avg Land Area',avgLand,'fmt','sq. m')+'</div></div>';
+  h+='<div class="mc-sect" style="animation-delay:.09s"><h3>Supply share by drill level</h3><div class="mc-chain">'+
+     chain.map(function(r){return '<div class="mc-chrow"><span class="mc-chlvl">'+esc(r.level)+'</span><span class="mc-chnm">'+esc(r.name)+'</span><span class="mc-chpct">'+(r.parent?'<b>'+r.pctOfParent.toFixed(1)+'%</b> of '+esc(r.parent):'base <b>100%</b>')+'</span><span class="mc-chn">'+fmtInt(r.projects)+' proj</span></div>';}).join('')+'</div></div>';
+  h+='<div class="mc-sect" style="animation-delay:.12s"><h3>Delivery &amp; status</h3><div class="mc-grid2">'+
+     '<div class="mc-panel"><h4>Current status split</h4><div class="chartbox" style="height:230px" id="'+pfx+'Status">'+
+       donut([{label:'Active',value:t.active,color:'#2563eb'},{label:'Completed',value:t.completed,color:'#23a55a'},{label:'Lapsed',value:t.lapsed,color:'#e5484d'}],'Projects',pfx+'st')+'</div></div>'+
+     '<div class="mc-panel"><h4>Delivery metrics</h4>'+
+       mrow('Completed',compRate.toFixed(1)+'%',fmtInt(t.completed)+' projects','#23a55a')+
+       mrow('Active',activeRate.toFixed(1)+'%',fmtInt(t.active)+' projects','#2563eb')+
+       mrow('Lapsed',lapseRate.toFixed(1)+'%',fmtInt(t.lapsed)+' projects','#e5484d')+
+       mrow('RERA Easy clientele',fmtInt(t.cliCnt),pct(t.cliCnt,P).toFixed(1)+'% of projects','#e0b00d')+
+       mrow('Avg days to complete',avgDays?fmtInt(avgDays):'-',avgDays?(avgDays/365).toFixed(1)+' yrs':'','')+
+       mrow('Avg complaints / project',avgCmpl.toFixed(2),fmtInt(t.complaints)+' total','')+'</div>'+
+     '</div></div>';
+  var tr=computeMasterTrend(path);
+  var mChecks='<div class="trendseries">'+SERIES_DEFS.map(function(s){return '<label><input type="checkbox" class="mc-trs" data-key="'+s.key+'"'+(trendSel.has(s.key)?' checked':'')+'><span class="sw" style="background:'+s.color+'"></span>'+s.name+'</label>';}).join('')+'</div>';
+  var mMth='<select class="mc-mth" style="margin-left:auto;width:auto;padding:4px 8px;font-size:12px"><option value=""'+(masterMonthYear?'':' selected')+'>Year-wise</option>'+years.map(function(y){return '<option value="'+y+'"'+(masterMonthYear===y?' selected':'')+'>Months of '+y+'</option>';}).join('')+'</select>';
+  h+='<div class="mc-sect" style="animation-delay:.19s"><h3 style="display:flex;align-items:center;gap:10px"><span id="'+pfx+'TrendTitle">'+tr.title+'</span>'+mMth+'</h3><div class="mc-panel">'+mChecks+'<div class="chartbox bar" style="height:230px" id="'+pfx+'Trend">'+
+     lineChartMulti(tr.labels,tr.series)+'</div><div class="muted" id="'+pfx+'TrendNote" style="font-size:11.5px;margin-top:6px">'+tr.note+'</div></div></div>';
+  h+='<div class="mc-sect" style="animation-delay:.26s"><h3>Top 5 &amp; supply mix</h3><div class="mc-grid2">'+
+     '<div class="mc-panel"><h4>Top '+esc(subLabel)+'s by projects</h4><div class="chartbox" style="height:210px" id="'+pfx+'Sub">'+
+       barH(byProj.slice(0,5).map(function(g,i){return {label:g.name,value:g.projects,color:palette[i%palette.length]};}))+'</div></div>'+
+     '<div class="mc-panel"><h4>Top 5 lending banks</h4><div class="chartbox" style="height:210px" id="'+pfx+'Bank">'+
+       barH(bk.map(function(b,i){return {label:b.name,value:b.c,color:palette[i%palette.length]};}))+'</div></div>'+
+     '</div><div class="mc-panel" style="margin-top:18px"><h4>Project type mix</h4><div class="chartbox" style="height:220px" id="'+pfx+'Type">'+
+       donut(typeMix,'Projects',pfx+'pt')+'</div></div></div>';
+  h+='<div class="mc-foot"><span>RERA Easy · Confidential — MahaRERA registry (2017–2026)</span><span>'+fmtInt(P)+' projects in scope</span></div>';
+  h+='</div></div>';
+  path=saved;F.cli=savedCli;return h;
+}
+function wireMaster(pfx){
+  wireDonut(pfx+'Status');wireDonut(pfx+'Type');
+  var wrap=document.getElementById(pfx+'Wrap');if(!wrap)return;
+  wrap.querySelectorAll('.mc-kpi .v[data-count]').forEach(function(el){countUp(el);});
+  wrap.querySelectorAll('.mc-kpi .bar').forEach(function(b){requestAnimationFrame(function(){b.style.width='100%';});});
+  wrap.querySelectorAll('.mc-trs').forEach(function(cb){cb.onchange=function(){if(cb.checked)trendSel.add(cb.getAttribute('data-key'));else trendSel.delete(cb.getAttribute('data-key'));updateMasterTrends();};});
+  wrap.querySelectorAll('.mc-mth').forEach(function(sel){sel.onchange=function(){masterMonthYear=sel.value?+sel.value:null;updateMasterTrends();};});
+  wrap.querySelectorAll('#'+pfx+'Trend polyline').forEach(function(poly){var len=poly.getTotalLength();poly.style.strokeDasharray=len;poly.style.strokeDashoffset=len;poly.getBoundingClientRect();poly.style.transition='stroke-dashoffset 1.1s ease .2s';requestAnimationFrame(function(){poly.style.strokeDashoffset=0;});});
+  [pfx+'Sub',pfx+'Bank'].forEach(function(id){var svg=document.querySelector('#'+id+' svg');if(!svg)return;svg.querySelectorAll('rect').forEach(function(r){if(r.getAttribute('rx')==='4'){r.style.transformBox='fill-box';r.style.transformOrigin='left';r.style.transform='scaleX(0)';r.style.transition='transform .9s cubic-bezier(.2,.7,.2,1) .25s';requestAnimationFrame(function(){r.style.transform='scaleX(1)';});}});});
+}
+var masterRender=null,masterScopes={},compareLeft=[],masterReraOnly=false,masterMonthYear=null;
+function computeMasterTrend(sp){
+  var saved=path;path=sp;var savedCli=F.cli;if(masterReraOnly)F.cli=new Set([1]);
+  var sel=SERIES_DEFS.filter(function(s){return trendSel.has(s.key);});if(!sel.length)sel=[SERIES_DEFS[0]];
+  var r={};
+  if(masterMonthYear){
+    var md=monthAgg(masterMonthYear);
+    r.labels=MONTHS;r.series=sel.map(function(s){return {name:s.name,color:s.color,fmt:s.fmt,values:md.map(function(a){return s.val(a);})};});
+    r.title='Month-wise trend — '+masterMonthYear;
+    r.note='Month-wise for <b>'+masterMonthYear+'</b> ('+fmtInt(md.reduce(function(x,a){return x+a.n;},0))+' registrations)'+(sel.length>1?' · lines indexed to own max':'')+'.';
+  }else{
+    var A=aggregate(GEO[Math.min(sp.length,GEOMAX)][0]);
+    var ys=Object.keys(A.yrAgg).map(Number).sort(function(a,b){return a-b;});
+    var peak=ys[0]||0;ys.forEach(function(y){if((A.yrMap[y]||0)>(A.yrMap[peak]||0))peak=y;});
+    r.labels=ys;r.series=sel.map(function(s){return {name:s.name,color:s.color,fmt:s.fmt,values:ys.map(function(y){return s.val(A.yrAgg[y]||{});})};});
+    r.title='Year-wise trend';
+    r.note='Peak year <b>'+peak+'</b> ('+fmtInt(A.yrMap[peak]||0)+')'+(sel.length>1?' · lines indexed to own max':'')+' · years '+F.yrMin+'–'+F.yrMax+'.';
+  }
+  path=saved;F.cli=savedCli;return r;
+}
+function openMaster(html,label){document.getElementById('masterSheet').innerHTML=html;document.getElementById('mtLabel').textContent=label;var mv=document.getElementById('masterView');mv.classList.add('open');mv.scrollTop=0;var a=document.getElementById('mYrMin'),b=document.getElementById('mYrMax');if(a){a.value=F.yrMin;b.value=F.yrMax;}}
+function updateMasterTrends(){
+  Object.keys(masterScopes).forEach(function(pfx){
+    var tr=computeMasterTrend(masterScopes[pfx]);
+    var el=document.getElementById(pfx+'Trend');if(el){el.innerHTML=lineChartMulti(tr.labels,tr.series);
+      el.querySelectorAll('polyline').forEach(function(poly){var len=poly.getTotalLength();poly.style.strokeDasharray=len;poly.style.strokeDashoffset=len;poly.getBoundingClientRect();poly.style.transition='stroke-dashoffset .9s ease';requestAnimationFrame(function(){poly.style.strokeDashoffset=0;});});}
+    var tt=document.getElementById(pfx+'TrendTitle');if(tt)tt.innerHTML=tr.title;
+    var tn=document.getElementById(pfx+'TrendNote');if(tn)tn.innerHTML=tr.note;
+    var ms=document.querySelector('#'+pfx+'Wrap .mc-mth');if(ms)ms.value=masterMonthYear||'';
+  });
+  document.querySelectorAll('#masterSheet .mc-trs').forEach(function(cb){cb.checked=trendSel.has(cb.getAttribute('data-key'));});
+}
+function openSingleMaster(sp){var rera=masterReraOnly;masterRender=function(){masterScopes={mc:sp};openMaster(masterCardHTML(sp,'mc'),(rera?'RERA Easy Clientele — ':'Master Card — ')+(sp.length?sp[sp.length-1].name:'Maharashtra'));wireMaster('mc');var mb=document.getElementById('mBack');if(mb)mb.style.display='none';};masterRender();}
+function buildMasterCard(){masterReraOnly=false;openSingleMaster(path.slice());}
+function reraPreview(){masterReraOnly=true;openSingleMaster(path.slice());}
+function openCompare(aPath,bPath,label){compareLeft=aPath.slice();masterRender=function(){masterScopes={mcA:aPath,mcB:bPath};openMaster('<div class="mc-compare">'+masterCardHTML(aPath,'mcA')+masterCardHTML(bPath,'mcB')+'</div>',label);wireMaster('mcA');wireMaster('mcB');var mb=document.getElementById('mBack');if(mb)mb.style.display='';};masterRender();}
+document.getElementById('previewBtn').onclick=buildMasterCard;
+document.getElementById('reraPreviewBtn').onclick=reraPreview;
+document.getElementById('mClose').onclick=function(){document.getElementById('masterView').classList.remove('open');};
+document.getElementById('mPrint').onclick=function(){document.body.classList.add('print-master');window.print();document.body.classList.remove('print-master');};
+(function(){
+  var mn=document.getElementById('mYrMin'),mx=document.getElementById('mYrMax');
+  years.forEach(function(y){mn.add(new Option(y,y));mx.add(new Option(y,y));});
+  mn.value=F.yrMin;mx.value=F.yrMax;
+  function applyYr(){yrMinSel.value=F.yrMin;yrMaxSel.value=F.yrMax;var t1=document.getElementById('trYrMin'),t2=document.getElementById('trYrMax');if(t1){t1.value=F.yrMin;t2.value=F.yrMax;}render();if(masterRender)masterRender();}
+  mn.onchange=function(){F.yrMin=+mn.value;if(F.yrMin>F.yrMax){F.yrMax=F.yrMin;mx.value=F.yrMax;}applyYr();};
+  mx.onchange=function(){F.yrMax=+mx.value;if(F.yrMax<F.yrMin){F.yrMin=F.yrMax;mn.value=F.yrMin;}applyYr();};
+  var ca=document.getElementById('cmpA'),cb=document.getElementById('cmpB');
+  searchIdx.forEach(function(e,gi){if(e.type==='geo'){ca.add(new Option(e.name+' · '+e.tag,gi));cb.add(new Option(e.name+' · '+e.tag,gi));}});
+  var chooser=document.getElementById('cmpChooser');
+  document.getElementById('mCompare').onclick=function(){chooser.style.display='flex';};
+  document.getElementById('mBack').onclick=function(){openSingleMaster(compareLeft.slice());};
+  document.getElementById('cmpCancel').onclick=function(){chooser.style.display='none';};
+  chooser.querySelectorAll('button[data-cmp]').forEach(function(btn){btn.onclick=function(){
+    var mode=btn.getAttribute('data-cmp'),aP,bP,lbl;
+    if(mode==='parent'){aP=path.slice();bP=path.slice(0,-1);lbl='Compare — scope vs parent';}
+    else if(mode==='maha'){aP=path.slice();bP=[];lbl='Compare — scope vs Maharashtra';}
+    else{var ea=searchIdx[+ca.value],eb=searchIdx[+cb.value];aP=buildPathTo(ea.lvl,ea.code);bP=buildPathTo(eb.lvl,eb.code);lbl='Compare — '+ea.name+' vs '+eb.name;}
+    chooser.style.display='none';openCompare(aP,bP,lbl);
+  };});
+})();
+(function(){var tb=document.getElementById('themeBtn');
+  function apply(dark){document.body.classList.toggle('dark',dark);tb.textContent=dark?'☀ Light':'🌙 Dark';try{localStorage.setItem('reraTheme',dark?'dark':'light');}catch(e){}}
+  var saved='light';try{saved=localStorage.getItem('reraTheme')||'light';}catch(e){}
+  apply(saved==='dark');
+  tb.onclick=function(){apply(!document.body.classList.contains('dark'));};})();
+var tipEl=document.getElementById('tip');
+document.addEventListener('mouseover',function(e){if(e.target&&e.target.getAttribute){var tp=e.target.getAttribute('data-tip');if(tp){tipEl.innerHTML=tp;tipEl.style.display='block';}}});
+document.addEventListener('mousemove',function(e){if(tipEl.style.display==='block'){tipEl.style.left=(e.clientX+14)+'px';tipEl.style.top=(e.clientY+14)+'px';}});
+document.addEventListener('mouseout',function(e){if(e.target&&e.target.getAttribute&&e.target.getAttribute('data-tip'))tipEl.style.display='none';});
+render();
+</script>
+</body>
+</html>
