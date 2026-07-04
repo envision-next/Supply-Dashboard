@@ -25,6 +25,9 @@
   .topbtn:hover{background:var(--yellow2)}
   .themebtn{background:transparent;border:1px solid #3a3f47;color:#fff;border-radius:8px;padding:9px 13px;font-size:13px;font-weight:600;cursor:pointer}
   .themebtn:hover{border-color:var(--yellow)}
+  .filtbtn{display:none;background:var(--yellow);color:#171717;border:none;border-radius:8px;padding:9px 14px;font-weight:700;font-size:13px;cursor:pointer}
+  .filtbtn:hover{background:var(--yellow2)}
+  .sidebackdrop{display:none}
   .wrap{display:flex;min-height:calc(100vh - 66px)}
   .side{width:240px;flex:0 0 240px;background:var(--card);border-right:1px solid var(--line);padding:16px 14px;overflow-y:auto}
   .main{flex:1;padding:18px 22px;overflow-x:hidden;min-width:0}
@@ -162,6 +165,42 @@
   .footmade b{color:var(--yellow);font-weight:700}
   @media(max-width:1100px){.grid{grid-template-columns:1fr}.donutwrap .dsvg{flex:0 0 180px;height:180px}.donutwrap .dsvg svg{width:180px;height:180px}}
 
+  /* ---- mobile: off-canvas filter drawer + tighter layout ---- */
+  @media(max-width:720px){
+    header{padding:11px 14px}
+    .brandlogo{height:27px}
+    .brand .tag{display:none}
+    .filtbtn{display:inline-block}
+    .wrap{display:block;min-height:auto}
+    .side{position:fixed;top:0;left:0;bottom:0;width:84%;max-width:300px;flex-basis:auto;z-index:1200;transform:translateX(-100%);transition:transform .28s ease;box-shadow:0 0 44px rgba(0,0,0,.45);-webkit-overflow-scrolling:touch}
+    body.filt-open .side{transform:translateX(0)}
+    .sidebackdrop{display:block;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1150;opacity:0;pointer-events:none;transition:opacity .28s ease}
+    body.filt-open .sidebackdrop{opacity:1;pointer-events:auto}
+    .main{padding:14px 13px}
+    .searchwrap input{max-width:none}
+    .searchsug{width:100%}
+    .scopebar{flex-direction:column;align-items:stretch}
+    .scopebtns{flex-wrap:wrap}
+    .cards{grid-template-columns:1fr;max-height:none}
+    .tablewrap{max-height:none}
+    .chartbox,.chartbox.bar{height:260px}
+    .mc-head{flex-direction:column;padding:20px 18px}
+    .mc-title{font-size:22px}
+    .mc-body{padding:8px 16px 24px}
+    .mc-kpis{grid-template-columns:repeat(2,1fr)}
+    .mc-grid2{grid-template-columns:1fr}
+    .sheet{padding:26px 18px;margin:12px auto}
+    .sheet .kgrid{grid-template-columns:1fr 1fr}
+    .rtoolbar,.mtoolbar{flex-wrap:wrap;gap:6px}
+    footer{padding:18px 16px}
+    .foot-in{gap:14px}
+  }
+  @media(max-width:430px){
+    .kpis{grid-template-columns:1fr 1fr}
+    .kpi .val{font-size:23px}
+    .themebtn{padding:9px 11px}
+  }
+
   /* ---- dark theme ---- */
   body.dark{--bg:#0f1115;--card:#1b1e24;--ink:#e6e8ec;--mut:#98a0ad;--line:#2b2f37;--band:#0b0d10}
   body.dark select,body.dark .btn,body.dark .backbtn,body.dark .drillback,body.dark .tg,body.dark .searchwrap input{background:#20242c;color:var(--ink);border-color:var(--line)}
@@ -281,6 +320,7 @@
     <div class="tag" style="border-left:1px solid #3a3f47;padding-left:12px">Real Estate Market Intelligence · Maharashtra</div>
   </div>
   <div style="display:flex;align-items:center;gap:10px">
+    <button class="filtbtn" id="filtBtn" onclick="document.body.classList.toggle('filt-open')" aria-label="Toggle filters">☰ Filters</button>
     <button class="themebtn" id="themeBtn" title="Toggle dark mode">🌙 Dark</button>
   </div>
 </header>
@@ -296,6 +336,7 @@
     <div class="fgroup"><h3>Current Status</h3><div id="fCStatus"></div></div>
     <div class="fgroup"><h3>RERA Easy Clientele</h3><div id="fCli"></div></div>
   </aside>
+  <div class="sidebackdrop" id="sideBackdrop" onclick="document.body.classList.remove('filt-open')"></div>
   <main class="main">
     <div id="errbar"></div>
     <div class="searchwrap"><input id="searchBox" placeholder="Search any district, taluka, village, pincode or bank…" autocomplete="off"><button class="searchclear" id="searchClear" title="Clear search" style="display:none">✕ Clear</button><div class="searchsug" id="searchSug"></div></div>
