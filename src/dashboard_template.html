@@ -228,7 +228,7 @@
   body.dark .cv{fill:var(--ink)}
   body.dark .legend .lt{color:#c7ccd4} body.dark .legend .lv b{color:var(--ink)}
 
-  #reportView{display:none;position:fixed;inset:0;z-index:1000;background:#3a3a3a;overflow:auto}
+  #reportView{display:none;position:fixed;inset:0;z-index:1200;background:#3a3a3a;overflow:auto}
   #reportView.open{display:block}
   .rtoolbar{position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;background:#171717;border-bottom:1px solid #000;padding:11px 18px;z-index:5}
   .rtoolbar .l{color:#c7cbd2;font-size:12.5px}
@@ -876,6 +876,8 @@ function activeFilterDesc(){var parts=[];
   if(F.cli.size<2)parts.push('Clientele: '+(F.cli.has(1)?'Yes':'No'));
   parts.push('Years '+F.yrMin+'-'+F.yrMax);return parts.join('  ·  ');}
 function kbox(l,v,n){return '<div class="kbox"><div class="l">'+l+'</div><div class="v">'+v+'</div><div class="n">'+n+'</div></div>';}
+var DISCLAIMER='This report is compiled from the MahaRERA public project registry and is provided for market due-diligence and business-development use only. It is indicative and does not constitute investment, legal, financial, or valuation advice. Registration and status data reflect filings as recorded and may lag, contain filing errors, or differ from on-ground outcomes; completion timelines shown are projections, not guarantees. Figures shift when the underlying export is refreshed. Independently verify before making any commercial, purchase, or lending decision. RERA Easy accepts no liability for actions taken on the basis of this information.';
+function disclaimerHTML(){return '<h3 style="border-left-color:#e5484d">Disclaimer</h3><p style="font-size:11px;color:#6b7a90;line-height:1.6">'+DISCLAIMER+'</p>';}
 function buildReport(){
   var gfield=GEO[Math.min(currentLevel(),GEOMAX)][0];
   var A=aggregate(gfield),t=A.tot,groups=enrich(A);
@@ -928,6 +930,10 @@ function buildReport(){
   h+='<li><b>Demand signal:</b> momentum '+(momentum>=0?'positive (+'+momentum.toFixed(0)+'%)':momentum.toFixed(0)+'%')+' - '+(momentum>=0?'lean into expansion narratives.':'position around absorption and completion-led demand.')+'</li>';
   h+='<li><b>Product mix:</b> residential at '+resShare.toFixed(0)+'% - '+(resShare>=60?'core focus; commercial/mixed a niche.':'meaningful non-residential activity worth dedicated outreach.')+'</li>';
   h+='</ul>';
+  var top10=byProj.slice(0,10).reduce(function(s,g){return s+g.projects;},0);
+  var _rp=path,_rb=F.bank,_rpin=F.pin;path=[];F.bank=null;F.pin=null;var _MH=aggregate().tot;path=_rp;F.bank=_rb;F.pin=_rpin;
+  h+='<h3>Market Concentration &amp; Positioning</h3><p>Top 3 '+subLabel.toLowerCase()+'s hold <b>'+pct(top3,P).toFixed(1)+'%</b>, top 5 <b>'+pct(top5,P).toFixed(1)+'%</b>, top 10 <b>'+pct(top10,P).toFixed(1)+'%</b> of scope registrations — '+(pct(top5,P)>=65?'a concentrated market where a handful of micro-markets dominate supply.':'a comparatively distributed market with supply spread across many micro-markets.')+' This scope is <b>'+pct(P,_MH.projects).toFixed(2)+'%</b> of all '+fmtInt(_MH.projects)+' Maharashtra registrations, averaging <b>'+fmt(t.units/P)+'</b> units and <b>'+fmt(t.carpet/P)+' sq. m</b> carpet per project.</p>';
+  h+=disclaimerHTML();
   h+='<div class="rfoot"><span>RERA Easy - Confidential | Pune +91 91384 90809 · Mumbai +91 99879 57851</span><span>Source: MahaRERA registry, 2017-2026</span></div>';
   document.getElementById('reportSheet').innerHTML=h;
   document.getElementById('rtLabel').textContent='Report - '+scopeName();
@@ -1047,7 +1053,7 @@ function wireMaster(pfx){
     draw();
   })();
 }
-var masterRender=null,masterScopes={},compareLeft=[],masterReraOnly=false,masterMonthYear=null,masterWatch={};
+var masterRender=null,masterScopes={},compareLeft=[],compareA=[],compareB=[],masterReraOnly=false,masterMonthYear=null,masterWatch={};
 function renderWatch(pfx,metric,yr){
   var w=masterWatch[pfx];if(!w)return;
   var el=document.getElementById(pfx+'Watch'),nt=document.getElementById(pfx+'WatchNote');if(!el)return;
@@ -1080,6 +1086,89 @@ function computeMasterTrend(sp){
   }
   path=saved;F.cli=savedCli;return r;
 }
+function scopeAgg(sp){var s={p:path,bk:F.bank,pin:F.pin};path=sp||[];F.bank=null;F.pin=null;var A=aggregate();path=s.p;F.bank=s.bk;F.pin=s.pin;return A;}
+function diffLine(labels,vals){
+  var mob=window.innerWidth<=720,W=mob?560:1200,H=mob?340:280,padL=mob?60:54,padR=20,padT=16,padB=30;
+  var plotW=W-padL-padR,plotH=H-padT-padB,mx=1;vals.forEach(function(v){mx=Math.max(mx,Math.abs(v));});
+  var n=labels.length,zeroY=padT+plotH/2,f=mob?17:12;
+  var xs=labels.map(function(_,i){return padL+(n<=1?plotW/2:i/(n-1)*plotW);});
+  var ys=vals.map(function(v){return zeroY-(v/mx)*(plotH/2);});
+  var s='<svg viewBox="0 0 '+W+' '+H+'" style="font:12px Segoe UI">';
+  s+='<line x1="'+padL+'" y1="'+zeroY+'" x2="'+(W-padR)+'" y2="'+zeroY+'" stroke="#c9ced6" stroke-width="1"/>';
+  s+='<text x="'+(padL-8)+'" y="'+(padT+5)+'" text-anchor="end" fill="#9aa1ad" font-size="'+f+'">+'+Math.round(mx)+'%</text>';
+  s+='<text x="'+(padL-8)+'" y="'+(zeroY+4)+'" text-anchor="end" fill="#9aa1ad" font-size="'+f+'">0</text>';
+  s+='<text x="'+(padL-8)+'" y="'+(padT+plotH+2)+'" text-anchor="end" fill="#9aa1ad" font-size="'+f+'">-'+Math.round(mx)+'%</text>';
+  var pts=xs.map(function(x,i){return x+','+ys[i];}).join(' ');
+  s+='<polyline points="'+pts+'" fill="none" stroke="#7c3aed" stroke-width="'+(mob?3.4:2.5)+'"/>';
+  xs.forEach(function(x,i){var col=vals[i]>=0?'#23a55a':'#e5484d';s+='<circle cx="'+x+'" cy="'+ys[i]+'" r="'+(mob?18:12)+'" fill="transparent" data-tip="'+labels[i]+': '+(vals[i]>=0?'+':'')+vals[i].toFixed(0)+'% (A vs B)"></circle><circle cx="'+x+'" cy="'+ys[i]+'" r="'+(mob?5:4)+'" fill="'+col+'"></circle><text x="'+x+'" y="'+(H-8)+'" text-anchor="middle" fill="#9aa1ad" font-size="'+f+'">'+labels[i]+'</text>';});
+  return s+'</svg>';
+}
+function cmpYears(A,B){var m={};Object.keys(A.yrMap).forEach(function(y){m[y]=1;});Object.keys(B.yrMap).forEach(function(y){m[y]=1;});return Object.keys(m).map(Number).sort(function(a,b){return a-b;});}
+function compareHeaderHTML(aPath,bPath){
+  var A=scopeAgg(aPath),B=scopeAgg(bPath),ta=A.tot,tb=B.tot;
+  var aN=aPath.length?aPath[aPath.length-1].name:'Maharashtra',bN=bPath.length?bPath[bPath.length-1].name:'Maharashtra';
+  function avg(t,k){return t.projects?t[k]/t.projects:0;}
+  function d(a,b){if(!b)return a?'+∞':'—';var x=(a/b-1)*100;return (x>=0?'+':'')+x.toFixed(0)+'%';}
+  var rows=[['Registered projects',fmtInt(ta.projects),fmtInt(tb.projects),d(ta.projects,tb.projects)],
+    ['Avg units / project',fmt(avg(ta,'units')),fmt(avg(tb,'units')),d(avg(ta,'units'),avg(tb,'units'))],
+    ['Avg carpet area',fmt(avg(ta,'carpet')),fmt(avg(tb,'carpet')),d(avg(ta,'carpet'),avg(tb,'carpet'))],
+    ['Completion rate',pct(ta.completed,ta.projects).toFixed(1)+'%',pct(tb.completed,tb.projects).toFixed(1)+'%',(pct(ta.completed,ta.projects)-pct(tb.completed,tb.projects)>=0?'+':'')+(pct(ta.completed,ta.projects)-pct(tb.completed,tb.projects)).toFixed(1)+' pp'],
+    ['Lapse rate',pct(ta.lapsed,ta.projects).toFixed(1)+'%',pct(tb.lapsed,tb.projects).toFixed(1)+'%',(pct(ta.lapsed,ta.projects)-pct(tb.lapsed,tb.projects)>=0?'+':'')+(pct(ta.lapsed,ta.projects)-pct(tb.lapsed,tb.projects)).toFixed(1)+' pp']];
+  var yl=cmpYears(A,B),diff=yl.map(function(y){var a=A.yrMap[y]||0,b=B.yrMap[y]||0;return b?100*(a-b)/b:(a?100:0);});
+  var h='<div class="mcard" style="max-width:1040px;margin-bottom:14px"><div class="mc-body" style="padding:18px 26px 22px">';
+  h+='<div class="mc-sect"><h3>Head-to-head — '+esc(aN)+' (A) vs '+esc(bN)+' (B)</h3>';
+  h+='<table style="width:100%"><thead><tr><th>Metric</th><th>'+esc(aN)+' (A)</th><th>'+esc(bN)+' (B)</th><th>A vs B</th></tr></thead><tbody>'+rows.map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td><b>'+r[3]+'</b></td></tr>';}).join('')+'</tbody></table></div>';
+  h+='<div class="mc-sect"><h3>Year-wise % difference (A vs B registrations)</h3><div class="mc-panel"><div class="chartbox" style="height:280px">'+diffLine(yl,diff)+'</div><div class="muted" style="font-size:11.5px;margin-top:6px">Positive = A registered more than B that year; negative = fewer.</div></div></div>';
+  h+='<div style="text-align:right;margin-top:6px"><button class="pvbtn" id="cmpReportBtn">📄 Compare Analysis Report</button></div>';
+  return h+'</div></div>';
+}
+function buildCompareReport(aPath,bPath){
+  var A=scopeAgg(aPath),B=scopeAgg(bPath),ta=A.tot,tb=B.tot;
+  var aN=aPath.length?aPath[aPath.length-1].name:'Maharashtra',bN=bPath.length?bPath[bPath.length-1].name:'Maharashtra';
+  var Pa=ta.projects||1,Pb=tb.projects||1;
+  function avg(t,k){return t.projects?t[k]/t.projects:0;}
+  function d(a,b){if(!b)return a?'+∞':'—';var x=(a/b-1)*100;return (x>=0?'+':'')+x.toFixed(0)+'%';}
+  function stronger(a,b,hi){return (hi?a>=b:a<=b)?aN:bN;}
+  var caR=pct(ta.completed,Pa),cbR=pct(tb.completed,Pb),laR=pct(ta.lapsed,Pa),lbR=pct(tb.lapsed,Pb);
+  var yl=cmpYears(A,B),diff=yl.map(function(y){var a=A.yrMap[y]||0,b=B.yrMap[y]||0;return b?100*(a-b)/b:(a?100:0);});
+  var tyA=D.ptype.map(function(nm,i){return {nm:nm,c:A.typeCnt[i]};}).sort(function(a,b){return b.c-a.c;});
+  var tyB=D.ptype.map(function(nm,i){return {nm:nm,c:B.typeCnt[i]};}).sort(function(a,b){return b.c-a.c;});
+  var h='';
+  h+='<div class="rhead"><div class="rlogo"><img class="rlogoimg" src="__LOGO_LIGHT__" alt="RERA Easy"></div><div style="text-align:right;font-size:11px;color:#6b7a90">Report generated<br><b style="color:#171717">'+new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})+'</b></div></div>';
+  h+='<h2 class="title">Comparative Market Analysis</h2>';
+  h+='<div class="scopemeta"><b>A:</b> '+esc(aN)+'  vs  <b>B:</b> '+esc(bN)+'  |  '+esc(activeFilterDesc())+'</div>';
+  h+='<h3>1. Executive Summary</h3>';
+  h+='<p><b>'+esc(aN)+'</b> carries <b>'+fmtInt(Pa)+'</b> registered projects versus <b>'+fmtInt(Pb)+'</b> in <b>'+esc(bN)+'</b> ('+d(Pa,Pb)+' on A). On delivery, '+esc(stronger(caR,cbR,true))+' leads completion ('+caR.toFixed(1)+'% vs '+cbR.toFixed(1)+'%) while '+esc(stronger(laR,lbR,false))+' carries the lower lapse risk ('+Math.min(laR,lbR).toFixed(1)+'% vs '+Math.max(laR,lbR).toFixed(1)+'%). Average project scale is '+fmt(avg(ta,"units"))+' vs '+fmt(avg(tb,"units"))+' units.</p>';
+  h+='<h3>2. Key Metrics — Side by Side</h3>';
+  h+='<table><thead><tr><th>Metric</th><th>'+esc(aN)+' (A)</th><th>'+esc(bN)+' (B)</th><th>A vs B</th></tr></thead><tbody>'+
+    [['Registered projects',fmtInt(Pa),fmtInt(Pb),d(Pa,Pb)],
+     ['Total units',fmt(ta.units),fmt(tb.units),d(ta.units,tb.units)],
+     ['Total carpet area',fmt(ta.carpet),fmt(tb.carpet),d(ta.carpet,tb.carpet)],
+     ['Avg units / project',fmt(avg(ta,'units')),fmt(avg(tb,'units')),d(avg(ta,'units'),avg(tb,'units'))],
+     ['Avg carpet / project',fmt(avg(ta,'carpet')),fmt(avg(tb,'carpet')),d(avg(ta,'carpet'),avg(tb,'carpet'))],
+     ['Completion rate',caR.toFixed(1)+'%',cbR.toFixed(1)+'%',(caR-cbR>=0?'+':'')+(caR-cbR).toFixed(1)+' pp'],
+     ['Lapse rate',laR.toFixed(1)+'%',lbR.toFixed(1)+'%',(laR-lbR>=0?'+':'')+(laR-lbR).toFixed(1)+' pp'],
+     ['Avg complaints / project',(ta.complaints/Pa).toFixed(2),(tb.complaints/Pb).toFixed(2),d(ta.complaints/Pa,tb.complaints/Pb)]
+    ].map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td><b>'+r[3]+'</b></td></tr>';}).join('')+'</tbody></table>';
+  h+='<h3>3. Registration Trend & Year-wise Difference</h3>';
+  h+='<table><thead><tr><th>Year</th>'+yl.map(function(y){return '<th>'+y+'</th>';}).join('')+'</tr></thead><tbody>'+
+     '<tr><td>'+esc(aN)+' (A)</td>'+yl.map(function(y){return '<td>'+fmtInt(A.yrMap[y]||0)+'</td>';}).join('')+'</tr>'+
+     '<tr><td>'+esc(bN)+' (B)</td>'+yl.map(function(y){return '<td>'+fmtInt(B.yrMap[y]||0)+'</td>';}).join('')+'</tr>'+
+     '<tr><td>A vs B %</td>'+diff.map(function(v){return '<td class="'+(v>=0?'pos':'neg')+'">'+(v>=0?'+':'')+v.toFixed(0)+'%</td>';}).join('')+'</tr></tbody></table>';
+  h+='<h3>4. Supply Composition</h3>';
+  h+='<table><thead><tr><th>Project Type</th><th>'+esc(aN)+'</th><th>'+esc(bN)+'</th></tr></thead><tbody>'+D.ptype.map(function(nm,i){return '<tr><td>'+esc(nm)+'</td><td>'+pct(A.typeCnt[i],Pa).toFixed(1)+'%</td><td>'+pct(B.typeCnt[i],Pb).toFixed(1)+'%</td></tr>';}).join('')+'</tbody></table>';
+  h+='<h3>5. Verdict</h3><ul>'+
+     '<li><b>Volume:</b> '+esc(Pa>=Pb?aN:bN)+' is the larger market ('+fmtInt(Math.max(Pa,Pb))+' vs '+fmtInt(Math.min(Pa,Pb))+' projects).</li>'+
+     '<li><b>Delivery quality:</b> '+esc(stronger(caR,cbR,true))+' has the stronger completion record; '+esc(stronger(laR,lbR,false))+' the lower lapse risk.</li>'+
+     '<li><b>Momentum:</b> the latest year favours '+esc((diff.length&&diff[diff.length-1]>=0)?aN:bN)+' ('+(diff.length?(diff[diff.length-1]>=0?'+':'')+diff[diff.length-1].toFixed(0)+'%':'n/a')+' A-vs-B in '+(yl.length?yl[yl.length-1]:'')+').</li>'+
+     '<li><b>Positioning:</b> lead with '+esc(caR>=cbR?aN:bN)+' on delivery-certainty messaging; use '+esc(Pa>=Pb?aN:bN)+' for scale-led campaigns.</li>'+
+     '</ul>';
+  h+=disclaimerHTML();
+  h+='<div class="rfoot"><span>RERA Easy - Confidential | Pune +91 91384 90809 · Mumbai +91 99879 57851</span><span>Source: MahaRERA registry, 2017-2026</span></div>';
+  document.getElementById('reportSheet').innerHTML=h;
+  document.getElementById('rtLabel').textContent='Compare Report — '+aN+' vs '+bN;
+  document.getElementById('reportView').classList.add('open');document.getElementById('reportView').scrollTop=0;
+}
 function openMaster(html,label){document.getElementById('masterSheet').innerHTML=html;document.getElementById('mtLabel').textContent=label;var mv=document.getElementById('masterView');mv.classList.add('open');mv.scrollTop=0;var a=document.getElementById('mYrMin'),b=document.getElementById('mYrMax');if(a){a.value=F.yrMin;b.value=F.yrMax;}}
 function updateMasterTrends(){
   Object.keys(masterScopes).forEach(function(pfx){
@@ -1095,7 +1184,7 @@ function updateMasterTrends(){
 function openSingleMaster(sp){var rera=masterReraOnly;masterRender=function(){masterScopes={mc:sp};openMaster(masterCardHTML(sp,'mc'),(rera?'RERA Easy Clientele — ':'Master Card — ')+(sp.length?sp[sp.length-1].name:'Maharashtra'));wireMaster('mc');var mb=document.getElementById('mBack');if(mb)mb.style.display='none';};masterRender();}
 function buildMasterCard(){masterReraOnly=false;openSingleMaster(path.slice());}
 function reraPreview(){masterReraOnly=true;openSingleMaster(path.slice());}
-function openCompare(aPath,bPath,label){compareLeft=aPath.slice();masterRender=function(){masterScopes={mcA:aPath,mcB:bPath};openMaster('<div class="mc-compare">'+masterCardHTML(aPath,'mcA')+masterCardHTML(bPath,'mcB')+'</div>',label);wireMaster('mcA');wireMaster('mcB');var mb=document.getElementById('mBack');if(mb)mb.style.display='';};masterRender();}
+function openCompare(aPath,bPath,label){compareLeft=aPath.slice();compareA=aPath.slice();compareB=bPath.slice();masterRender=function(){masterScopes={mcA:aPath,mcB:bPath};openMaster(compareHeaderHTML(aPath,bPath)+'<div class="mc-compare">'+masterCardHTML(aPath,'mcA')+masterCardHTML(bPath,'mcB')+'</div>',label);wireMaster('mcA');wireMaster('mcB');var rb=document.getElementById('cmpReportBtn');if(rb)rb.onclick=function(){buildCompareReport(compareA,compareB);};var mb=document.getElementById('mBack');if(mb)mb.style.display='';};masterRender();}
 document.getElementById('previewBtn').onclick=buildMasterCard;
 document.getElementById('reraPreviewBtn').onclick=reraPreview;
 document.getElementById('mClose').onclick=function(){document.getElementById('masterView').classList.remove('open');};

@@ -174,6 +174,10 @@ children.push(H("9. Methodology & Notes"));
 children.push(P([T("Source: MahaRERA project registry, covering "+ci(P_)+" registered projects with registration years from "+S.minYear+" to "+S.maxYear+". Figures are aggregated from registered project filings. ",{size:18,c:"5A6B82"}),
   T("Data cleaning: a small number of records with corrupt carpet-area values and negative completion-day values were excluded from those specific metrics only; all projects are retained in counts. \"Completed/Active/Lapsed\" reflects the project's current RERA status. \"Avg Days to Complete\" is the registry's reported average days metric. Areas are in the source units. 2026 figures are year-to-date.",{size:18,c:"5A6B82"})]));
 
+// 10. Disclaimer
+children.push(H("10. Disclaimer & Limitations"));
+children.push(P([T("This report is compiled from the MahaRERA public project registry and is provided for market due-diligence and business-development use only. It is indicative and does not constitute investment, legal, financial, or valuation advice. Registration and status data reflect filings as recorded and may lag, contain filing errors, or differ from on-ground outcomes; completion timelines shown are projections, not guarantees. Figures shift when the underlying export is refreshed. Independently verify before making any commercial, purchase, or lending decision. RERA Easy accepts no liability for actions taken on the basis of this information.",{size:18,c:"8A5A3C"})]));
+
 // ============ ASSEMBLE ============
 const doc=new Document({
   creator:"RERA Easy",title:"Maharashtra Real Estate Market Analysis",
