@@ -656,8 +656,8 @@ function aggregate(force){
   return {groups:Object.keys(groups).map(function(k){return groups[k];}),tot:tot,typeCnt:typeCnt,statusCnt:statusCnt,yrMap:yrMap,yrAgg:yrAgg,bankCnt:bankCnt,gf:gf};
 }
 function enrich(A){var dk=DKf[A.gf];return A.groups.map(function(g){return {code:g.code,name:dispName(A.gf,g.code),projects:g.projects,units:g.projects?g.units/g.projects:0,land:g.projects?g.land/g.projects:0,carpet:g.projects?g.carpet/g.projects:0,builtup:g.projects?g.builtup/g.projects:0,cpu:g.projects?g.cpuSum/g.projects:0,cli:g.cliCnt,complaints:g.projects?g.complaints/g.projects:0,completed:g.completed,lapsed:g.lapsed,compRate:pct(g.completed,g.projects),lapseRate:pct(g.lapsed,g.projects),avgDays:g.daysCnt?g.daysSum/g.daysCnt:null};});}
-function scopeName(){return path.length?path[path.length-1].name:'Maharashtra (All Areas)';}
-function scopePathStr(){return path.length?path.map(function(p){return p.name;}).join(' / '):'All Maharashtra';}
+function scopeName(){var pn=(F.pin!=null?'PIN '+D.pin[F.pin]:'');return path.length?path[path.length-1].name:(pn||'Maharashtra (All Areas)');}
+function scopePathStr(){var pn=(F.pin!=null?'PIN '+D.pin[F.pin]:'');return path.length?(path.map(function(p){return p.name;}).join(' / ')+(pn?' · '+pn:'')):(pn||'All Maharashtra');}
 
 function renderChips(){
   var el=document.getElementById('chips');var h='';
@@ -1014,7 +1014,7 @@ function masterCardHTML(scopePath,pfx){
      mck('Avg Built-Up',avgBuilt,'fmt',_dl(avgBuilt,maBu)||'sq. m')+mck('Avg Land Area',avgLand,'fmt',_dl(avgLand,maLa)||'sq. m')+'</div></div>';
   var _lvNames=['Division','District','Taluka','Village','Pincode'];var locp='';
   for(var _l=0;_l<path.length;_l++){locp+='<span class="mc-lp"><b>'+_lvNames[path[_l].lvl]+':</b> '+esc(path[_l].name)+'</span>';}
-  if(!path.length)locp='<span class="mc-lp"><b>Coverage:</b> All Maharashtra</span>';
+  if(!path.length)locp='<span class="mc-lp"><b>Coverage:</b> '+(F.pin!=null?'PIN '+esc(D.pin[F.pin])+' (all areas)':'All Maharashtra')+'</span>';
   locp+='<span class="mc-lp"><b>Pincodes in scope:</b> '+fmtInt(t.pinCnt)+'</span>';
   if(F.pin!=null)locp+='<span class="mc-lp"><b>PIN:</b> '+esc(D.pin[F.pin])+'</span>';
   h+='<div class="mc-sect" style="animation-delay:.07s"><h3>Location parameters</h3><div class="mc-lprow">'+locp+'</div></div>';
@@ -1071,7 +1071,7 @@ function wireMaster(pfx){
     draw();
   })();
 }
-var masterRender=null,masterScopes={},compareLeft=[],compareA=[],compareB=[],compareReraA=false,compareReraB=false,masterReraMap={},masterReraOnly=false,masterMonthYear=null,masterWatch={};
+var masterRender=null,masterScopes={},compareLeft=[],compareA=[],compareB=[],compareReraA=false,compareReraB=false,compareA_pin=null,compareB_pin=null,masterReraMap={},masterPinMap={},masterReraOnly=false,masterMonthYear=null,masterWatch={};
 function renderWatch(pfx,metric,yr){
   var w=masterWatch[pfx];if(!w)return;
   var el=document.getElementById(pfx+'Watch'),nt=document.getElementById(pfx+'WatchNote');if(!el)return;
@@ -1104,7 +1104,7 @@ function computeMasterTrend(sp){
   }
   path=saved;F.cli=savedCli;return r;
 }
-function scopeAgg(sp,rera){var s={p:path,bk:F.bank,pin:F.pin,cli:F.cli};path=sp||[];F.bank=null;F.pin=null;if(rera)F.cli=new Set([1]);var A=aggregate();path=s.p;F.bank=s.bk;F.pin=s.pin;F.cli=s.cli;return A;}
+function scopeAgg(sp,rera,pin){var s={p:path,bk:F.bank,pin:F.pin,cli:F.cli};path=sp||[];F.bank=null;F.pin=(pin!=null?pin:null);if(rera)F.cli=new Set([1]);var A=aggregate();path=s.p;F.bank=s.bk;F.pin=s.pin;F.cli=s.cli;return A;}
 function diffLine(labels,vals){
   var mob=window.innerWidth<=720,W=mob?560:1200,H=mob?340:280,padL=mob?60:54,padR=20,padT=16,padB=30;
   var plotW=W-padL-padR,plotH=H-padT-padB,mx=1;vals.forEach(function(v){mx=Math.max(mx,Math.abs(v));});
@@ -1122,9 +1122,9 @@ function diffLine(labels,vals){
   return s+'</svg>';
 }
 function cmpYears(A,B){var m={};Object.keys(A.yrMap).forEach(function(y){m[y]=1;});Object.keys(B.yrMap).forEach(function(y){m[y]=1;});return Object.keys(m).map(Number).sort(function(a,b){return a-b;});}
-function compareHeaderHTML(aPath,bPath,reraA,reraB){
-  var A=scopeAgg(aPath,reraA),B=scopeAgg(bPath,reraB),ta=A.tot,tb=B.tot;
-  var aN=(aPath.length?aPath[aPath.length-1].name:'Maharashtra')+(reraA?' · RERA Easy':''),bN=(bPath.length?bPath[bPath.length-1].name:'Maharashtra')+(reraB?' · RERA Easy':'');
+function compareHeaderHTML(aPath,bPath,reraA,reraB,pinA,pinB){
+  var A=scopeAgg(aPath,reraA,pinA),B=scopeAgg(bPath,reraB,pinB),ta=A.tot,tb=B.tot;
+  var aN=(pinA!=null?'PIN '+D.pin[pinA]:(aPath.length?aPath[aPath.length-1].name:'Maharashtra'))+(reraA?' · RERA Easy':''),bN=(pinB!=null?'PIN '+D.pin[pinB]:(bPath.length?bPath[bPath.length-1].name:'Maharashtra'))+(reraB?' · RERA Easy':'');
   function avg(t,k){return t.projects?t[k]/t.projects:0;}
   function d(a,b){if(!b)return a?'+∞':'—';var x=(a/b-1)*100;return (x>=0?'+':'')+x.toFixed(0)+'%';}
   var rows=[['Registered projects',fmtInt(ta.projects),fmtInt(tb.projects),d(ta.projects,tb.projects)],
@@ -1141,9 +1141,9 @@ function compareHeaderHTML(aPath,bPath,reraA,reraB){
   h+='<div style="text-align:right;margin-top:6px"><button class="pvbtn" id="cmpReportBtn">📄 Compare Analysis Report</button></div>';
   return h+'</div></div>';
 }
-function buildCompareReport(aPath,bPath,reraA,reraB){
-  var A=scopeAgg(aPath,reraA),B=scopeAgg(bPath,reraB),ta=A.tot,tb=B.tot;
-  var aN=(aPath.length?aPath[aPath.length-1].name:'Maharashtra')+(reraA?' · RERA Easy':''),bN=(bPath.length?bPath[bPath.length-1].name:'Maharashtra')+(reraB?' · RERA Easy':'');
+function buildCompareReport(aPath,bPath,reraA,reraB,pinA,pinB){
+  var A=scopeAgg(aPath,reraA,pinA),B=scopeAgg(bPath,reraB,pinB),ta=A.tot,tb=B.tot;
+  var aN=(pinA!=null?'PIN '+D.pin[pinA]:(aPath.length?aPath[aPath.length-1].name:'Maharashtra'))+(reraA?' · RERA Easy':''),bN=(pinB!=null?'PIN '+D.pin[pinB]:(bPath.length?bPath[bPath.length-1].name:'Maharashtra'))+(reraB?' · RERA Easy':'');
   var Pa=ta.projects||1,Pb=tb.projects||1;
   function avg(t,k){return t.projects?t[k]/t.projects:0;}
   function d(a,b){if(!b)return a?'+∞':'—';var x=(a/b-1)*100;return (x>=0?'+':'')+x.toFixed(0)+'%';}
@@ -1199,7 +1199,8 @@ function openMaster(html,label){document.getElementById('masterSheet').innerHTML
 function updateMasterTrends(){
   Object.keys(masterScopes).forEach(function(pfx){
     var _sr=masterReraOnly;masterReraOnly=!!masterReraMap[pfx];
-    var tr=computeMasterTrend(masterScopes[pfx]);masterReraOnly=_sr;
+    var _spn=F.pin;F.pin=(masterPinMap[pfx]!=null?masterPinMap[pfx]:null);
+    var tr=computeMasterTrend(masterScopes[pfx]);masterReraOnly=_sr;F.pin=_spn;
     var el=document.getElementById(pfx+'Trend');if(el){el.innerHTML=lineChartMulti(tr.labels,tr.series);
       el.querySelectorAll('polyline').forEach(function(poly){var len=poly.getTotalLength();poly.style.strokeDasharray=len;poly.style.strokeDashoffset=len;poly.getBoundingClientRect();poly.style.transition='stroke-dashoffset .9s ease';requestAnimationFrame(function(){poly.style.strokeDashoffset=0;});});}
     var tt=document.getElementById(pfx+'TrendTitle');if(tt)tt.innerHTML=tr.title;
@@ -1211,7 +1212,7 @@ function updateMasterTrends(){
 function openSingleMaster(sp){var rera=masterReraOnly;masterRender=function(){masterScopes={mc:sp};openMaster(masterCardHTML(sp,'mc'),(rera?'RERA Easy Clientele — ':'Master Card — ')+(sp.length?sp[sp.length-1].name:'Maharashtra'));wireMaster('mc');var mb=document.getElementById('mBack');if(mb)mb.style.display='none';};masterRender();}
 function buildMasterCard(){masterReraOnly=false;openSingleMaster(path.slice());}
 function reraPreview(){masterReraOnly=true;openSingleMaster(path.slice());}
-function openCompare(aPath,bPath,label,reraA,reraB){compareLeft=aPath.slice();compareA=aPath.slice();compareB=bPath.slice();compareReraA=!!reraA;compareReraB=!!reraB;masterRender=function(){masterScopes={mcA:aPath,mcB:bPath};masterReraMap={mcA:!!reraA,mcB:!!reraB};masterReraOnly=!!reraA;var hA=masterCardHTML(aPath,'mcA');masterReraOnly=!!reraB;var hB=masterCardHTML(bPath,'mcB');masterReraOnly=false;openMaster(compareHeaderHTML(aPath,bPath,reraA,reraB)+'<div class="mc-compare">'+hA+hB+'</div>',label);wireMaster('mcA');wireMaster('mcB');var rb=document.getElementById('cmpReportBtn');if(rb)rb.onclick=function(){buildCompareReport(compareA,compareB,compareReraA,compareReraB);};var mb=document.getElementById('mBack');if(mb)mb.style.display='';};masterRender();}
+function openCompare(aPath,bPath,label,reraA,reraB,pinA,pinB){compareLeft=aPath.slice();compareA=aPath.slice();compareB=bPath.slice();compareReraA=!!reraA;compareReraB=!!reraB;compareA_pin=(pinA!=null?pinA:null);compareB_pin=(pinB!=null?pinB:null);masterRender=function(){masterScopes={mcA:aPath,mcB:bPath};masterReraMap={mcA:!!reraA,mcB:!!reraB};masterPinMap={mcA:(pinA!=null?pinA:null),mcB:(pinB!=null?pinB:null)};var savedPin=F.pin;F.pin=(pinA!=null?pinA:null);masterReraOnly=!!reraA;var hA=masterCardHTML(aPath,'mcA');F.pin=(pinB!=null?pinB:null);masterReraOnly=!!reraB;var hB=masterCardHTML(bPath,'mcB');F.pin=savedPin;masterReraOnly=false;openMaster(compareHeaderHTML(aPath,bPath,reraA,reraB,pinA,pinB)+'<div class="mc-compare">'+hA+hB+'</div>',label);wireMaster('mcA');wireMaster('mcB');var rb=document.getElementById('cmpReportBtn');if(rb)rb.onclick=function(){buildCompareReport(compareA,compareB,compareReraA,compareReraB,compareA_pin,compareB_pin);};var mb=document.getElementById('mBack');if(mb)mb.style.display='';};masterRender();}
 document.getElementById('previewBtn').onclick=buildMasterCard;
 document.getElementById('reraPreviewBtn').onclick=reraPreview;
 document.getElementById('mClose').onclick=function(){document.getElementById('masterView').classList.remove('open');};
@@ -1249,17 +1250,19 @@ document.getElementById('mPrint').onclick=function(){document.body.classList.add
   document.getElementById('cmpCancel').onclick=function(){chooser.style.display='none';};
   chooser.querySelectorAll('.cmpscope').forEach(function(cb){cb.onchange=function(){var side=cb.getAttribute('data-side');if(cb.checked){chooser.querySelectorAll('.cmpscope[data-side="'+side+'"]').forEach(function(o){if(o!==cb)o.checked=false;});if(side==='A'){cmpPathA=[];renderCmpSel('cmpAsel',cmpPathA);}else{cmpPathB=[];renderCmpSel('cmpBsel',cmpPathB);}}};});
   chooser.querySelectorAll('button[data-cmp]').forEach(function(btn){btn.onclick=function(){
-    var mode=btn.getAttribute('data-cmp'),aP,bP,lbl,raA=false,raB=false;
-    if(mode==='parent'){aP=path.slice();bP=path.slice(0,-1);lbl='Compare — scope vs parent';}
-    else if(mode==='maha'){aP=path.slice();bP=[];lbl='Compare — scope vs Maharashtra';}
+    var mode=btn.getAttribute('data-cmp'),aP,bP,lbl,raA=false,raB=false,pinA=null,pinB=null;
+    if(mode==='parent'){aP=path.slice();bP=path.slice(0,-1);pinA=F.pin;lbl='Compare — scope vs parent';}
+    else if(mode==='maha'){aP=path.slice();bP=[];pinA=F.pin;lbl='Compare — scope vs Maharashtra';}
     else{var _sp=function(side,dp){var c=chooser.querySelector('.cmpscope[data-side="'+side+'"][data-scope="cur"]'),m=chooser.querySelector('.cmpscope[data-side="'+side+'"][data-scope="maha"]');if(c&&c.checked)return path.slice();if(m&&m.checked)return [];return dp.slice();};
       aP=_sp('A',cmpPathA);bP=_sp('B',cmpPathB);
+      var aCur=chooser.querySelector('.cmpscope[data-side="A"][data-scope="cur"]'),bCur=chooser.querySelector('.cmpscope[data-side="B"][data-scope="cur"]');
+      pinA=(aCur&&aCur.checked)?F.pin:null;pinB=(bCur&&bCur.checked)?F.pin:null;
       var cra=chooser.querySelector('.cmprera[data-side="A"]'),crb=chooser.querySelector('.cmprera[data-side="B"]');raA=!!(cra&&cra.checked);raB=!!(crb&&crb.checked);
       // a RERA-Easy side with no place of its own inherits the other side's place (Pune vs RERA Easy(Pune))
-      if(raA&&!aP.length&&bP.length)aP=bP.slice();
-      if(raB&&!bP.length&&aP.length)bP=aP.slice();
-      lbl='Compare — '+(aP.length?aP[aP.length-1].name:'Maharashtra')+(raA?' (RERA Easy)':'')+' vs '+(bP.length?bP[bP.length-1].name:'Maharashtra')+(raB?' (RERA Easy)':'');}
-    chooser.style.display='none';openCompare(aP,bP,lbl,raA,raB);
+      if(raA&&!aP.length&&!pinA&&bP.length)aP=bP.slice();
+      if(raB&&!bP.length&&!pinB&&aP.length)bP=aP.slice();
+      lbl='Compare — '+(pinA!=null?'PIN '+D.pin[pinA]:(aP.length?aP[aP.length-1].name:'Maharashtra'))+(raA?' (RERA Easy)':'')+' vs '+(pinB!=null?'PIN '+D.pin[pinB]:(bP.length?bP[bP.length-1].name:'Maharashtra'))+(raB?' (RERA Easy)':'');}
+    chooser.style.display='none';openCompare(aP,bP,lbl,raA,raB,pinA,pinB);
   };});
 })();
 (function(){var tb=document.getElementById('themeBtn');
