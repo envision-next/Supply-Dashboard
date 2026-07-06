@@ -910,7 +910,7 @@ function buildReport(){
   h+='<table><thead><tr><th>Project Type</th><th>Projects</th><th>Share</th></tr></thead><tbody>'+typeRows.map(function(r){return '<tr><td>'+esc(r.nm)+'</td><td>'+fmtInt(r.c)+'</td><td>'+pct(r.c,P).toFixed(1)+'%</td></tr>';}).join('')+'</tbody></table>';
   h+='<p>Average project size is <b>'+(t.units/P).toFixed(0)+' units</b> and <b>'+fmt(t.carpet/P)+' sq. m</b> of carpet area. Total land area in scope is <b>'+fmt(t.land)+' sq. m</b>.</p>';
   h+='<h3>3. Registration Trend & Demand Momentum</h3>';
-  h+='<table><thead><tr><th>Year</th>'+ys.map(function(y){return '<th>'+y+'</th>';}).join('')+'</tr></thead><tbody><tr><td>New registrations</td>'+ys.map(function(y){return '<td>'+fmtInt(A.yrMap[y]||0)+'</td>';}).join('')+'</tr></tbody></table>';
+  h+='<table><thead><tr><th>Year</th>'+ys.map(function(y){return '<th>'+y+'</th>';}).join('')+'</tr></thead><tbody><tr><td>New registrations</td>'+ys.map(function(y){return '<td>'+fmtInt(A.yrMap[y]||0)+'</td>';}).join('')+'</tr><tr><td>YoY growth</td>'+ys.map(function(y,ix){if(ix===0)return '<td>—</td>';var pv=A.yrMap[ys[ix-1]]||0,cv=A.yrMap[y]||0;var g=pv?100*(cv-pv)/pv:0;return '<td class="'+(g>=0?'pos':'neg')+'">'+(g>=0?'+':'')+g.toFixed(0)+'%</td>';}).join('')+'</tr></tbody></table>';
   h+='<p>Peak year in scope was <b>'+peakY+'</b> ('+fmtInt(A.yrMap[peakY])+' projects). '+YR_MIN+' reflects the MahaRERA launch backlog; trend is most reliable from '+(YR_MIN+1)+' on. Last three full years ('+mwLabel(MW_RE)+': <b>'+fmtInt(recent)+'</b>) vs prior three ('+mwLabel(MW_PR)+': <b>'+fmtInt(prior)+'</b>) moved <b class="'+(momentum>=0?'pos':'neg')+'">'+(momentum>=0?'+':'')+momentum.toFixed(0)+'%</b>. '+YR_MAX+' is year-to-date.</p>';
   if(dd){h+='<h3>4. '+subLabel+'-wise Breakdown</h3>';
     h+='<p>Top 3 '+subLabel.toLowerCase()+'s = <b>'+pct(top3,P).toFixed(1)+'%</b> of scope; top 5 = <b>'+pct(top5,P).toFixed(1)+'%</b> - '+(pct(top5,P)>=65?'a highly concentrated market.':'a relatively distributed market.')+'</p>';
@@ -930,6 +930,8 @@ function buildReport(){
   h+='<li><b>Demand signal:</b> momentum '+(momentum>=0?'positive (+'+momentum.toFixed(0)+'%)':momentum.toFixed(0)+'%')+' - '+(momentum>=0?'lean into expansion narratives.':'position around absorption and completion-led demand.')+'</li>';
   h+='<li><b>Product mix:</b> residential at '+resShare.toFixed(0)+'% - '+(resShare>=60?'core focus; commercial/mixed a niche.':'meaningful non-residential activity worth dedicated outreach.')+'</li>';
   h+='</ul>';
+  h+='<h3>RERA Easy Clientele Footprint</h3><p>Within scope, <b>'+fmtInt(t.cliCnt)+'</b> projects (<b>'+pct(t.cliCnt,P).toFixed(1)+'%</b> of supply) are RERA Easy clientele. '+(pct(t.cliCnt,P)>=8?'A strong existing footprint — leverage referrals, testimonials and case studies to compound share here.':'Penetration is modest — a clear white-space to grow RERA Easy relationships and win new mandates.')+'</p>';
+  h+='<h3>Built Form & Density</h3><p>The average in-scope project spans <b>'+fmt(t.units/P)+'</b> units on <b>'+fmt(t.land/P)+' sq. m</b> of land, delivering <b>'+fmt(t.carpet/P)+' sq. m</b> carpet and <b>'+fmt(t.builtup/P)+' sq. m</b> sanctioned built-up per project (carpet ≈ <b>'+(t.builtup>0?pct(t.carpet,t.builtup).toFixed(0):'-')+'%</b> of built-up). Total in-scope footprint: <b>'+fmt(t.land)+' sq. m</b> land and <b>'+fmt(t.builtup)+' sq. m</b> built-up.</p>';
   var top10=byProj.slice(0,10).reduce(function(s,g){return s+g.projects;},0);
   var _rp=path,_rb=F.bank,_rpin=F.pin;path=[];F.bank=null;F.pin=null;var _MH=aggregate().tot;path=_rp;F.bank=_rb;F.pin=_rpin;
   h+='<h3>Market Concentration &amp; Positioning</h3><p>Top 3 '+subLabel.toLowerCase()+'s hold <b>'+pct(top3,P).toFixed(1)+'%</b>, top 5 <b>'+pct(top5,P).toFixed(1)+'%</b>, top 10 <b>'+pct(top10,P).toFixed(1)+'%</b> of scope registrations — '+(pct(top5,P)>=65?'a concentrated market where a handful of micro-markets dominate supply.':'a comparatively distributed market with supply spread across many micro-markets.')+' This scope is <b>'+pct(P,_MH.projects).toFixed(2)+'%</b> of all '+fmtInt(_MH.projects)+' Maharashtra registrations, averaging <b>'+fmt(t.units/P)+'</b> units and <b>'+fmt(t.carpet/P)+' sq. m</b> carpet per project.</p>';
@@ -975,11 +977,12 @@ function masterCardHTML(scopePath,pfx){
   var typeMix=D.ptype.map(function(nm,i){return {label:nm,value:A.typeCnt[i],color:palette[i%palette.length]};}).filter(function(d){return d.value>0;});
   var avgUnits=t.projects?t.units/t.projects:0,avgLand=t.projects?t.land/t.projects:0,avgCarpet=t.projects?t.carpet/t.projects:0,avgBuilt=t.projects?t.builtup/t.projects:0,avgCpu=t.projects?t.cpuSum/t.projects:0,avgDays=t.daysCnt?t.daysSum/t.daysCnt:0,avgCmpl=t.projects?t.complaints/t.projects:0;
   var chain=drillChain(path),scName=scopeName(),scPath=scopePathStr(),scFilt=activeFilterDesc();
-  // Maharashtra baseline (same non-geo filters) for % comparisons on the KPI tiles
-  var _mp=path,_mb=F.bank,_mpin=F.pin;path=[];F.bank=null;F.pin=null;var MA=aggregate().tot;path=_mp;F.bank=_mb;F.pin=_mpin;
+  // Maharashtra baseline = ALL Maharashtra (ignore geo/bank/pin AND clientele filter) so % share is
+  // against the whole state; in RERA preview this makes the KPI read as clientele penetration of Maharashtra.
+  var _mp=path,_mb=F.bank,_mpin=F.pin,_mcli=F.cli;path=[];F.bank=null;F.pin=null;F.cli=new Set([0,1]);var MA=aggregate().tot;path=_mp;F.bank=_mb;F.pin=_mpin;F.cli=_mcli;
   var maU=MA.projects?MA.units/MA.projects:0,maCr=MA.projects?MA.carpet/MA.projects:0,maBu=MA.projects?MA.builtup/MA.projects:0,maLa=MA.projects?MA.land/MA.projects:0,maCpu=MA.projects?MA.cpuSum/MA.projects:0;
-  var isMaha=!path.length;
-  function _dl(v,base){if(!base||isMaha)return '';var d=(v/base-1)*100;return (d>=0?'+':'')+d.toFixed(0)+'% vs MH avg';}
+  var isMaha=!path.length,showPct=!isMaha||masterReraOnly;
+  function _dl(v,base){if(!base||!showPct)return '';var d=(v/base-1)*100;return (d>=0?'+':'')+d.toFixed(0)+'% vs MH avg';}
   // per-child per-year counts within scope for the delivery-risk watchlist growth metric
   var childYr={};for(var _i=0;_i<N;_i++){if(passFilter(_i)){var _gc=C[gfield][_i],_yy=C.yr[_i];(childYr[_gc]||(childYr[_gc]={}))[_yy]=(childYr[_gc][_yy]||0)+1;}}
   var minN=Math.max(8,Math.round(P*0.004));
@@ -990,10 +993,10 @@ function masterCardHTML(scopePath,pfx){
   h+='<div class="mc-sub">'+esc(scPath)+'  ·  '+esc(scFilt)+'</div><span class="mc-tag">'+(masterReraOnly?'RERA EASY CLIENTELE SNAPSHOT':'SUPPLY MARKET SNAPSHOT')+'</span></div>';
   h+='<div style="text-align:right;color:#b8bcc4;font-size:11px">Generated<br><b style="color:#fff">'+new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})+'</b></div></div>';
   h+='<div class="mc-body">';
-  h+='<div class="mc-sect" style="animation-delay:.05s"><h3>Supply at a glance'+(isMaha?'':' <span class="muted" style="font-weight:400;font-size:11px;text-transform:none;letter-spacing:0">— share &amp; delta vs Maharashtra</span>')+'</h3><div class="mc-kpis">'+
-     mck('Registered Projects',P,'int',isMaha?'in scope':pct(P,MA.projects).toFixed(1)+'% of Maharashtra')+mck('Avg Units / Project',avgUnits,'fmt',isMaha?'dwelling / plot':_dl(avgUnits,maU))+
-     mck('Avg Carpet / Unit',avgCpu,'fmt',isMaha?'sq. m per unit':_dl(avgCpu,maCpu))+mck('Avg Carpet Area',avgCarpet,'fmt',isMaha?'sq. m':_dl(avgCarpet,maCr))+
-     mck('Avg Built-Up',avgBuilt,'fmt',isMaha?'sq. m':_dl(avgBuilt,maBu))+mck('Avg Land Area',avgLand,'fmt',isMaha?'sq. m':_dl(avgLand,maLa))+'</div></div>';
+  h+='<div class="mc-sect" style="animation-delay:.05s"><h3>Supply at a glance'+(showPct?' <span class="muted" style="font-weight:400;font-size:11px;text-transform:none;letter-spacing:0">— '+(masterReraOnly?'RERA clientele share of Maharashtra':'share &amp; delta vs Maharashtra')+'</span>':'')+'</h3><div class="mc-kpis">'+
+     mck('Registered Projects',P,'int',showPct?pct(P,MA.projects).toFixed(2)+'% of Maharashtra':'in scope')+mck('Avg Units / Project',avgUnits,'fmt',_dl(avgUnits,maU)||'dwelling / plot')+
+     mck('Avg Carpet / Unit',avgCpu,'fmt',_dl(avgCpu,maCpu)||'sq. m per unit')+mck('Avg Carpet Area',avgCarpet,'fmt',_dl(avgCarpet,maCr)||'sq. m')+
+     mck('Avg Built-Up',avgBuilt,'fmt',_dl(avgBuilt,maBu)||'sq. m')+mck('Avg Land Area',avgLand,'fmt',_dl(avgLand,maLa)||'sq. m')+'</div></div>';
   var _lvNames=['Division','District','Taluka','Village','Pincode'];var locp='';
   for(var _l=0;_l<path.length;_l++){locp+='<span class="mc-lp"><b>'+_lvNames[path[_l].lvl]+':</b> '+esc(path[_l].name)+'</span>';}
   if(!path.length)locp='<span class="mc-lp"><b>Coverage:</b> All Maharashtra</span>';
@@ -1113,7 +1116,8 @@ function compareHeaderHTML(aPath,bPath){
     ['Avg units / project',fmt(avg(ta,'units')),fmt(avg(tb,'units')),d(avg(ta,'units'),avg(tb,'units'))],
     ['Avg carpet area',fmt(avg(ta,'carpet')),fmt(avg(tb,'carpet')),d(avg(ta,'carpet'),avg(tb,'carpet'))],
     ['Completion rate',pct(ta.completed,ta.projects).toFixed(1)+'%',pct(tb.completed,tb.projects).toFixed(1)+'%',(pct(ta.completed,ta.projects)-pct(tb.completed,tb.projects)>=0?'+':'')+(pct(ta.completed,ta.projects)-pct(tb.completed,tb.projects)).toFixed(1)+' pp'],
-    ['Lapse rate',pct(ta.lapsed,ta.projects).toFixed(1)+'%',pct(tb.lapsed,tb.projects).toFixed(1)+'%',(pct(ta.lapsed,ta.projects)-pct(tb.lapsed,tb.projects)>=0?'+':'')+(pct(ta.lapsed,ta.projects)-pct(tb.lapsed,tb.projects)).toFixed(1)+' pp']];
+    ['Lapse rate',pct(ta.lapsed,ta.projects).toFixed(1)+'%',pct(tb.lapsed,tb.projects).toFixed(1)+'%',(pct(ta.lapsed,ta.projects)-pct(tb.lapsed,tb.projects)>=0?'+':'')+(pct(ta.lapsed,ta.projects)-pct(tb.lapsed,tb.projects)).toFixed(1)+' pp'],
+    ['RERA Easy clientele',fmtInt(ta.cliCnt)+' ('+pct(ta.cliCnt,ta.projects).toFixed(1)+'%)',fmtInt(tb.cliCnt)+' ('+pct(tb.cliCnt,tb.projects).toFixed(1)+'%)',d(ta.cliCnt,tb.cliCnt)]];
   var yl=cmpYears(A,B),diff=yl.map(function(y){var a=A.yrMap[y]||0,b=B.yrMap[y]||0;return b?100*(a-b)/b:(a?100:0);});
   var h='<div class="mcard" style="max-width:1040px;margin-bottom:14px"><div class="mc-body" style="padding:18px 26px 22px">';
   h+='<div class="mc-sect"><h3>Head-to-head — '+esc(aN)+' (A) vs '+esc(bN)+' (B)</h3>';
@@ -1148,7 +1152,11 @@ function buildCompareReport(aPath,bPath){
      ['Avg carpet / project',fmt(avg(ta,'carpet')),fmt(avg(tb,'carpet')),d(avg(ta,'carpet'),avg(tb,'carpet'))],
      ['Completion rate',caR.toFixed(1)+'%',cbR.toFixed(1)+'%',(caR-cbR>=0?'+':'')+(caR-cbR).toFixed(1)+' pp'],
      ['Lapse rate',laR.toFixed(1)+'%',lbR.toFixed(1)+'%',(laR-lbR>=0?'+':'')+(laR-lbR).toFixed(1)+' pp'],
-     ['Avg complaints / project',(ta.complaints/Pa).toFixed(2),(tb.complaints/Pb).toFixed(2),d(ta.complaints/Pa,tb.complaints/Pb)]
+     ['Avg complaints / project',(ta.complaints/Pa).toFixed(2),(tb.complaints/Pb).toFixed(2),d(ta.complaints/Pa,tb.complaints/Pb)],
+     ['Total land area',fmt(ta.land),fmt(tb.land),d(ta.land,tb.land)],
+     ['Total built-up area',fmt(ta.builtup),fmt(tb.builtup),d(ta.builtup,tb.builtup)],
+     ['Avg days to complete',ta.daysCnt?fmtInt(ta.daysSum/ta.daysCnt):'—',tb.daysCnt?fmtInt(tb.daysSum/tb.daysCnt):'—','—'],
+     ['RERA Easy clientele',fmtInt(ta.cliCnt)+' ('+pct(ta.cliCnt,Pa).toFixed(1)+'%)',fmtInt(tb.cliCnt)+' ('+pct(tb.cliCnt,Pb).toFixed(1)+'%)',d(ta.cliCnt,tb.cliCnt)]
     ].map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td><b>'+r[3]+'</b></td></tr>';}).join('')+'</tbody></table>';
   h+='<h3>3. Registration Trend & Year-wise Difference</h3>';
   h+='<table><thead><tr><th>Year</th>'+yl.map(function(y){return '<th>'+y+'</th>';}).join('')+'</tr></thead><tbody>'+
@@ -1157,7 +1165,10 @@ function buildCompareReport(aPath,bPath){
      '<tr><td>A vs B %</td>'+diff.map(function(v){return '<td class="'+(v>=0?'pos':'neg')+'">'+(v>=0?'+':'')+v.toFixed(0)+'%</td>';}).join('')+'</tr></tbody></table>';
   h+='<h3>4. Supply Composition</h3>';
   h+='<table><thead><tr><th>Project Type</th><th>'+esc(aN)+'</th><th>'+esc(bN)+'</th></tr></thead><tbody>'+D.ptype.map(function(nm,i){return '<tr><td>'+esc(nm)+'</td><td>'+pct(A.typeCnt[i],Pa).toFixed(1)+'%</td><td>'+pct(B.typeCnt[i],Pb).toFixed(1)+'%</td></tr>';}).join('')+'</tbody></table>';
-  h+='<h3>5. Verdict</h3><ul>'+
+  h+='<h3>5. Delivery Health & RERA Easy Footprint</h3>';
+  h+='<p><b>'+esc(aN)+'</b> records '+caR.toFixed(1)+'% completed and '+laR.toFixed(1)+'% lapsed, averaging '+(ta.daysCnt?fmtInt(ta.daysSum/ta.daysCnt)+' days ('+(ta.daysSum/ta.daysCnt/365).toFixed(1)+' yrs)':'n/a')+' to complete, with '+(ta.complaints/Pa).toFixed(2)+' complaints per project. <b>'+esc(bN)+'</b> records '+cbR.toFixed(1)+'% completed and '+lbR.toFixed(1)+'% lapsed, averaging '+(tb.daysCnt?fmtInt(tb.daysSum/tb.daysCnt)+' days ('+(tb.daysSum/tb.daysCnt/365).toFixed(1)+' yrs)':'n/a')+' with '+(tb.complaints/Pb).toFixed(2)+' complaints per project.</p>';
+  h+='<p>RERA Easy clientele penetration is <b>'+pct(ta.cliCnt,Pa).toFixed(1)+'%</b> in '+esc(aN)+' ('+fmtInt(ta.cliCnt)+' projects) versus <b>'+pct(tb.cliCnt,Pb).toFixed(1)+'%</b> in '+esc(bN)+' ('+fmtInt(tb.cliCnt)+' projects) — '+esc(pct(ta.cliCnt,Pa)>=pct(tb.cliCnt,Pb)?aN:bN)+' has the deeper RERA Easy footprint relative to its size.</p>';
+  h+='<h3>6. Verdict</h3><ul>'+
      '<li><b>Volume:</b> '+esc(Pa>=Pb?aN:bN)+' is the larger market ('+fmtInt(Math.max(Pa,Pb))+' vs '+fmtInt(Math.min(Pa,Pb))+' projects).</li>'+
      '<li><b>Delivery quality:</b> '+esc(stronger(caR,cbR,true))+' has the stronger completion record; '+esc(stronger(laR,lbR,false))+' the lower lapse risk.</li>'+
      '<li><b>Momentum:</b> the latest year favours '+esc((diff.length&&diff[diff.length-1]>=0)?aN:bN)+' ('+(diff.length?(diff[diff.length-1]>=0?'+':'')+diff[diff.length-1].toFixed(0)+'%':'n/a')+' A-vs-B in '+(yl.length?yl[yl.length-1]:'')+').</li>'+
