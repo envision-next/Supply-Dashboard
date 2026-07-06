@@ -1117,7 +1117,7 @@ function compareHeaderHTML(aPath,bPath){
     ['Avg carpet area',fmt(avg(ta,'carpet')),fmt(avg(tb,'carpet')),d(avg(ta,'carpet'),avg(tb,'carpet'))],
     ['Completion rate',pct(ta.completed,ta.projects).toFixed(1)+'%',pct(tb.completed,tb.projects).toFixed(1)+'%',(pct(ta.completed,ta.projects)-pct(tb.completed,tb.projects)>=0?'+':'')+(pct(ta.completed,ta.projects)-pct(tb.completed,tb.projects)).toFixed(1)+' pp'],
     ['Lapse rate',pct(ta.lapsed,ta.projects).toFixed(1)+'%',pct(tb.lapsed,tb.projects).toFixed(1)+'%',(pct(ta.lapsed,ta.projects)-pct(tb.lapsed,tb.projects)>=0?'+':'')+(pct(ta.lapsed,ta.projects)-pct(tb.lapsed,tb.projects)).toFixed(1)+' pp'],
-    ['RERA Easy clientele',fmtInt(ta.cliCnt)+' ('+pct(ta.cliCnt,ta.projects).toFixed(1)+'%)',fmtInt(tb.cliCnt)+' ('+pct(tb.cliCnt,tb.projects).toFixed(1)+'%)',d(ta.cliCnt,tb.cliCnt)]];
+    ['RERA Easy clientele',fmtInt(ta.cliCnt)+' <b style="color:#e0b00d">'+pct(ta.cliCnt,ta.projects).toFixed(1)+'%</b>',fmtInt(tb.cliCnt)+' <b style="color:#e0b00d">'+pct(tb.cliCnt,tb.projects).toFixed(1)+'%</b>',d(ta.cliCnt,tb.cliCnt)]];
   var yl=cmpYears(A,B),diff=yl.map(function(y){var a=A.yrMap[y]||0,b=B.yrMap[y]||0;return b?100*(a-b)/b:(a?100:0);});
   var h='<div class="mcard" style="max-width:1040px;margin-bottom:14px"><div class="mc-body" style="padding:18px 26px 22px">';
   h+='<div class="mc-sect"><h3>Head-to-head — '+esc(aN)+' (A) vs '+esc(bN)+' (B)</h3>';
