@@ -321,6 +321,7 @@
   .cmpcard{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 13px}
   .cmprlab{font-size:11px;color:var(--yellow2);font-weight:700;display:inline-flex;align-items:center;gap:4px;cursor:pointer;margin-left:4px}
   .cmprlab input{accent-color:var(--yellow2)}
+  .cmprlab2{font-size:11px;color:var(--mut);font-weight:600;display:inline-flex;align-items:center;gap:4px;cursor:pointer;margin-left:4px}
   .cmprow{display:flex;align-items:center;gap:10px;margin-bottom:14px}
   .mc-compare{display:flex;gap:22px;align-items:flex-start;justify-content:center;flex-wrap:wrap;padding:0 8px}
   .mc-compare .mcard{flex:1 1 560px;max-width:700px;margin:22px 0}
@@ -433,8 +434,8 @@
     <div class="cmprow"><button class="gbtn" data-cmp="parent">Current vs Parent</button><button class="gbtn" data-cmp="maha">Current vs Maharashtra</button></div>
     <div class="cmprow" style="flex-direction:column;align-items:stretch;gap:10px">
       <span class="muted">Two locations — drill down each side (leave a level blank = broader scope; leave all blank = Maharashtra):</span>
-      <div class="cmpcard"><div class="cmphd">Location A <button type="button" class="cmpcur" data-side="A" data-act="cur">use current scope</button><button type="button" class="cmpcur" data-side="A" data-act="maha">Maharashtra</button><label class="cmprlab"><input type="checkbox" class="cmprera" data-side="A"> RERA Easy only</label></div><div id="cmpAsel" class="cmpsel"></div></div>
-      <div class="cmpcard"><div class="cmphd">Location B <button type="button" class="cmpcur" data-side="B" data-act="cur">use current scope</button><button type="button" class="cmpcur" data-side="B" data-act="maha">Maharashtra</button><label class="cmprlab"><input type="checkbox" class="cmprera" data-side="B"> RERA Easy only</label></div><div id="cmpBsel" class="cmpsel"></div></div>
+      <div class="cmpcard"><div class="cmphd">Location A <label class="cmprlab2"><input type="checkbox" class="cmpscope" data-side="A" data-scope="cur" checked> Current</label><label class="cmprlab2"><input type="checkbox" class="cmpscope" data-side="A" data-scope="maha"> Maharashtra</label><label class="cmprlab"><input type="checkbox" class="cmprera" data-side="A"> RERA Easy only</label></div><div id="cmpAsel" class="cmpsel"></div></div>
+      <div class="cmpcard"><div class="cmphd">Location B <label class="cmprlab2"><input type="checkbox" class="cmpscope" data-side="B" data-scope="cur" checked> Current</label><label class="cmprlab2"><input type="checkbox" class="cmpscope" data-side="B" data-scope="maha"> Maharashtra</label><label class="cmprlab"><input type="checkbox" class="cmprera" data-side="B"> RERA Easy only</label></div><div id="cmpBsel" class="cmpsel"></div></div>
       <div><button class="gbtn" data-cmp="two">Compare these</button></div>
     </div>
     <div style="text-align:right"><button class="backbtn" id="cmpCancel">Cancel</button></div></div></div>
@@ -1236,6 +1237,7 @@ document.getElementById('mPrint').onclick=function(){document.body.classList.add
       (function(lvl){sel.onchange=function(){
         if(this.value===''){cpath.length=lvl;}
         else{cpath.length=lvl;cpath.push({lvl:lvl,code:+this.value,name:dispName(GEO[lvl][0],+this.value)});}
+        var sd=hostId==='cmpAsel'?'A':'B',ch=document.getElementById('cmpChooser');if(ch)ch.querySelectorAll('.cmpscope[data-side="'+sd+'"]').forEach(function(o){o.checked=false;});
         renderCmpSel(hostId,cpath);
       };})(lvl);
       host.appendChild(sel);
@@ -1245,12 +1247,14 @@ document.getElementById('mPrint').onclick=function(){document.body.classList.add
   document.getElementById('mCompare').onclick=function(){renderCmpSel('cmpAsel',cmpPathA);renderCmpSel('cmpBsel',cmpPathB);chooser.style.display='flex';};
   document.getElementById('mBack').onclick=function(){openSingleMaster(compareLeft.slice());};
   document.getElementById('cmpCancel').onclick=function(){chooser.style.display='none';};
-  chooser.querySelectorAll('.cmpcur').forEach(function(b){b.onclick=function(){var np=b.getAttribute('data-act')==='maha'?[]:path.slice();if(b.getAttribute('data-side')==='A'){cmpPathA=np;renderCmpSel('cmpAsel',cmpPathA);}else{cmpPathB=np;renderCmpSel('cmpBsel',cmpPathB);}};});
+  chooser.querySelectorAll('.cmpscope').forEach(function(cb){cb.onchange=function(){var side=cb.getAttribute('data-side');if(cb.checked){chooser.querySelectorAll('.cmpscope[data-side="'+side+'"]').forEach(function(o){if(o!==cb)o.checked=false;});if(side==='A'){cmpPathA=[];renderCmpSel('cmpAsel',cmpPathA);}else{cmpPathB=[];renderCmpSel('cmpBsel',cmpPathB);}}};});
   chooser.querySelectorAll('button[data-cmp]').forEach(function(btn){btn.onclick=function(){
     var mode=btn.getAttribute('data-cmp'),aP,bP,lbl,raA=false,raB=false;
     if(mode==='parent'){aP=path.slice();bP=path.slice(0,-1);lbl='Compare — scope vs parent';}
     else if(mode==='maha'){aP=path.slice();bP=[];lbl='Compare — scope vs Maharashtra';}
-    else{aP=cmpPathA.slice();bP=cmpPathB.slice();var cra=chooser.querySelector('.cmprera[data-side="A"]'),crb=chooser.querySelector('.cmprera[data-side="B"]');raA=!!(cra&&cra.checked);raB=!!(crb&&crb.checked);
+    else{var _sp=function(side,dp){var c=chooser.querySelector('.cmpscope[data-side="'+side+'"][data-scope="cur"]'),m=chooser.querySelector('.cmpscope[data-side="'+side+'"][data-scope="maha"]');if(c&&c.checked)return path.slice();if(m&&m.checked)return [];return dp.slice();};
+      aP=_sp('A',cmpPathA);bP=_sp('B',cmpPathB);
+      var cra=chooser.querySelector('.cmprera[data-side="A"]'),crb=chooser.querySelector('.cmprera[data-side="B"]');raA=!!(cra&&cra.checked);raB=!!(crb&&crb.checked);
       // a RERA-Easy side with no place of its own inherits the other side's place (Pune vs RERA Easy(Pune))
       if(raA&&!aP.length&&bP.length)aP=bP.slice();
       if(raB&&!bP.length&&aP.length)bP=aP.slice();
