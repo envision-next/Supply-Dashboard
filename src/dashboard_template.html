@@ -430,7 +430,7 @@
       <button class="backbtn" id="mCompare">⇆ Compare</button>
       <button class="backbtn" id="mPrint">Print / Save as PDF</button><button class="backbtn" id="mClose">Close</button></div></div>
   <div id="cmpChooser"><div class="cmpbox"><h3>Compare two scopes</h3>
-    <div class="cmprow" style="flex-wrap:wrap"><button class="gbtn" data-cmp="parent">Current vs Parent</button><button class="gbtn" data-cmp="maha">Current vs Maharashtra</button><button class="gbtn" data-cmp="rera" style="background:#e0b00d">RERA Easy vs All (current place)</button></div>
+    <div class="cmprow"><button class="gbtn" data-cmp="parent">Current vs Parent</button><button class="gbtn" data-cmp="maha">Current vs Maharashtra</button></div>
     <div class="cmprow" style="flex-direction:column;align-items:stretch;gap:10px">
       <span class="muted">Two locations — drill down each side (leave a level blank = broader scope; leave all blank = Maharashtra):</span>
       <div class="cmpcard"><div class="cmphd">Location A <button type="button" class="cmpcur" data-side="A" data-act="cur">use current scope</button><button type="button" class="cmpcur" data-side="A" data-act="maha">Maharashtra</button><label class="cmprlab"><input type="checkbox" class="cmprera" data-side="A"> RERA Easy only</label></div><div id="cmpAsel" class="cmpsel"></div></div>
@@ -1250,8 +1250,11 @@ document.getElementById('mPrint').onclick=function(){document.body.classList.add
     var mode=btn.getAttribute('data-cmp'),aP,bP,lbl,raA=false,raB=false;
     if(mode==='parent'){aP=path.slice();bP=path.slice(0,-1);lbl='Compare — scope vs parent';}
     else if(mode==='maha'){aP=path.slice();bP=[];lbl='Compare — scope vs Maharashtra';}
-    else if(mode==='rera'){aP=path.slice();bP=path.slice();raA=true;raB=false;lbl='RERA Easy vs All — '+scopeName();}
-    else{aP=cmpPathA.slice();bP=cmpPathB.slice();var cra=chooser.querySelector('.cmprera[data-side="A"]'),crb=chooser.querySelector('.cmprera[data-side="B"]');raA=!!(cra&&cra.checked);raB=!!(crb&&crb.checked);lbl='Compare — '+(aP.length?aP[aP.length-1].name:'Maharashtra')+(raA?' (RERA Easy)':'')+' vs '+(bP.length?bP[bP.length-1].name:'Maharashtra')+(raB?' (RERA Easy)':'');}
+    else{aP=cmpPathA.slice();bP=cmpPathB.slice();var cra=chooser.querySelector('.cmprera[data-side="A"]'),crb=chooser.querySelector('.cmprera[data-side="B"]');raA=!!(cra&&cra.checked);raB=!!(crb&&crb.checked);
+      // a RERA-Easy side with no place of its own inherits the other side's place (Pune vs RERA Easy(Pune))
+      if(raA&&!aP.length&&bP.length)aP=bP.slice();
+      if(raB&&!bP.length&&aP.length)bP=aP.slice();
+      lbl='Compare — '+(aP.length?aP[aP.length-1].name:'Maharashtra')+(raA?' (RERA Easy)':'')+' vs '+(bP.length?bP[bP.length-1].name:'Maharashtra')+(raB?' (RERA Easy)':'');}
     chooser.style.display='none';openCompare(aP,bP,lbl,raA,raB);
   };});
 })();
