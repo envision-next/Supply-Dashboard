@@ -1208,6 +1208,7 @@ document.getElementById('mPrint').onclick=function(){document.body.classList.add
   mn.onchange=function(){F.yrMin=+mn.value;if(F.yrMin>F.yrMax){F.yrMax=F.yrMin;mx.value=F.yrMax;}applyYr();};
   mx.onchange=function(){F.yrMax=+mx.value;if(F.yrMax<F.yrMin){F.yrMin=F.yrMax;mn.value=F.yrMin;}applyYr();};
   var ca=document.getElementById('cmpA'),cb=document.getElementById('cmpB');
+  [ca,cb].forEach(function(sel){sel.add(new Option('◧ Current scope','__cur__'));sel.add(new Option('Maharashtra (All areas)','__maha__'));});
   searchIdx.forEach(function(e,gi){if(e.type==='geo'){ca.add(new Option(e.name+' · '+e.tag,gi));cb.add(new Option(e.name+' · '+e.tag,gi));}});
   var chooser=document.getElementById('cmpChooser');
   document.getElementById('mCompare').onclick=function(){chooser.style.display='flex';};
@@ -1217,7 +1218,7 @@ document.getElementById('mPrint').onclick=function(){document.body.classList.add
     var mode=btn.getAttribute('data-cmp'),aP,bP,lbl;
     if(mode==='parent'){aP=path.slice();bP=path.slice(0,-1);lbl='Compare — scope vs parent';}
     else if(mode==='maha'){aP=path.slice();bP=[];lbl='Compare — scope vs Maharashtra';}
-    else{var ea=searchIdx[+ca.value],eb=searchIdx[+cb.value];aP=buildPathTo(ea.lvl,ea.code);bP=buildPathTo(eb.lvl,eb.code);lbl='Compare — '+ea.name+' vs '+eb.name;}
+    else{var _res=function(v){if(v==='__cur__')return {p:path.slice(),n:scopeName()};if(v==='__maha__')return {p:[],n:'Maharashtra'};var e=searchIdx[+v];return {p:buildPathTo(e.lvl,e.code),n:e.name};};var ra=_res(ca.value),rb=_res(cb.value);aP=ra.p;bP=rb.p;lbl='Compare — '+ra.n+' vs '+rb.n;}
     chooser.style.display='none';openCompare(aP,bP,lbl);
   };});
 })();
