@@ -431,8 +431,8 @@
     <div class="cmprow"><button class="gbtn" data-cmp="parent">Current vs Parent</button><button class="gbtn" data-cmp="maha">Current vs Maharashtra</button></div>
     <div class="cmprow" style="flex-direction:column;align-items:stretch;gap:10px">
       <span class="muted">Two locations — drill down each side (leave a level blank = broader scope; leave all blank = Maharashtra):</span>
-      <div class="cmpcard"><div class="cmphd">Location A <button type="button" class="cmpcur" data-side="A">use current scope</button></div><div id="cmpAsel" class="cmpsel"></div></div>
-      <div class="cmpcard"><div class="cmphd">Location B <button type="button" class="cmpcur" data-side="B">use current scope</button></div><div id="cmpBsel" class="cmpsel"></div></div>
+      <div class="cmpcard"><div class="cmphd">Location A <button type="button" class="cmpcur" data-side="A" data-act="cur">use current scope</button><button type="button" class="cmpcur" data-side="A" data-act="maha">Maharashtra</button></div><div id="cmpAsel" class="cmpsel"></div></div>
+      <div class="cmpcard"><div class="cmphd">Location B <button type="button" class="cmpcur" data-side="B" data-act="cur">use current scope</button><button type="button" class="cmpcur" data-side="B" data-act="maha">Maharashtra</button></div><div id="cmpBsel" class="cmpsel"></div></div>
       <div><button class="gbtn" data-cmp="two">Compare these</button></div>
     </div>
     <div style="text-align:right"><button class="backbtn" id="cmpCancel">Cancel</button></div></div></div>
@@ -1242,7 +1242,7 @@ document.getElementById('mPrint').onclick=function(){document.body.classList.add
   document.getElementById('mCompare').onclick=function(){renderCmpSel('cmpAsel',cmpPathA);renderCmpSel('cmpBsel',cmpPathB);chooser.style.display='flex';};
   document.getElementById('mBack').onclick=function(){openSingleMaster(compareLeft.slice());};
   document.getElementById('cmpCancel').onclick=function(){chooser.style.display='none';};
-  chooser.querySelectorAll('.cmpcur').forEach(function(b){b.onclick=function(){if(b.getAttribute('data-side')==='A'){cmpPathA=path.slice();renderCmpSel('cmpAsel',cmpPathA);}else{cmpPathB=path.slice();renderCmpSel('cmpBsel',cmpPathB);}};});
+  chooser.querySelectorAll('.cmpcur').forEach(function(b){b.onclick=function(){var np=b.getAttribute('data-act')==='maha'?[]:path.slice();if(b.getAttribute('data-side')==='A'){cmpPathA=np;renderCmpSel('cmpAsel',cmpPathA);}else{cmpPathB=np;renderCmpSel('cmpBsel',cmpPathB);}};});
   chooser.querySelectorAll('button[data-cmp]').forEach(function(btn){btn.onclick=function(){
     var mode=btn.getAttribute('data-cmp'),aP,bP,lbl;
     if(mode==='parent'){aP=path.slice();bP=path.slice(0,-1);lbl='Compare — scope vs parent';}
