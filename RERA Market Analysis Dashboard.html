@@ -312,6 +312,13 @@
   #cmpChooser{display:none;position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:8;align-items:flex-start;justify-content:center}
   .cmpbox{background:var(--card);color:var(--ink);border-radius:14px;padding:20px 22px;margin-top:70px;max-width:640px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,.5)}
   .cmpbox h3{margin:0 0 14px;font-size:15px}
+  .cmpbox{max-height:82vh;overflow-y:auto}
+  .cmphd{font-size:12px;font-weight:700;margin-bottom:5px;color:var(--mut);display:flex;align-items:center;gap:8px}
+  .cmpsel{display:flex;flex-wrap:wrap;gap:6px}
+  .cmpsel select{min-width:150px}
+  .cmpcur{background:transparent;border:1px solid var(--line);color:var(--yellow2);border-radius:6px;font-size:11px;padding:2px 8px;cursor:pointer}
+  .cmpcur:hover{background:var(--yellow);color:#171717;border-color:var(--yellow)}
+  .cmpcard{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 13px}
   .cmprow{display:flex;align-items:center;gap:10px;margin-bottom:14px}
   .mc-compare{display:flex;gap:22px;align-items:flex-start;justify-content:center;flex-wrap:wrap;padding:0 8px}
   .mc-compare .mcard{flex:1 1 560px;max-width:700px;margin:22px 0}
@@ -422,7 +429,12 @@
       <button class="backbtn" id="mPrint">Print / Save as PDF</button><button class="backbtn" id="mClose">Close</button></div></div>
   <div id="cmpChooser"><div class="cmpbox"><h3>Compare two scopes</h3>
     <div class="cmprow"><button class="gbtn" data-cmp="parent">Current vs Parent</button><button class="gbtn" data-cmp="maha">Current vs Maharashtra</button></div>
-    <div class="cmprow" style="flex-wrap:wrap"><span class="muted">Two locations:</span><select id="cmpA" class="mtsel" style="min-width:200px"></select><select id="cmpB" class="mtsel" style="min-width:200px"></select><button class="gbtn" data-cmp="two">Compare these</button></div>
+    <div class="cmprow" style="flex-direction:column;align-items:stretch;gap:10px">
+      <span class="muted">Two locations — drill down each side (leave a level blank = broader scope; leave all blank = Maharashtra):</span>
+      <div class="cmpcard"><div class="cmphd">Location A <button type="button" class="cmpcur" data-side="A">use current scope</button></div><div id="cmpAsel" class="cmpsel"></div></div>
+      <div class="cmpcard"><div class="cmphd">Location B <button type="button" class="cmpcur" data-side="B">use current scope</button></div><div id="cmpBsel" class="cmpsel"></div></div>
+      <div><button class="gbtn" data-cmp="two">Compare these</button></div>
+    </div>
     <div style="text-align:right"><button class="backbtn" id="cmpCancel">Cancel</button></div></div></div>
   <div id="masterSheet"></div>
 </div>
@@ -1207,18 +1219,35 @@ document.getElementById('mPrint').onclick=function(){document.body.classList.add
   function applyYr(){yrMinSel.value=F.yrMin;yrMaxSel.value=F.yrMax;var t1=document.getElementById('trYrMin'),t2=document.getElementById('trYrMax');if(t1){t1.value=F.yrMin;t2.value=F.yrMax;}render();if(masterRender)masterRender();}
   mn.onchange=function(){F.yrMin=+mn.value;if(F.yrMin>F.yrMax){F.yrMax=F.yrMin;mx.value=F.yrMax;}applyYr();};
   mx.onchange=function(){F.yrMax=+mx.value;if(F.yrMax<F.yrMin){F.yrMin=F.yrMax;mn.value=F.yrMin;}applyYr();};
-  var ca=document.getElementById('cmpA'),cb=document.getElementById('cmpB');
-  [ca,cb].forEach(function(sel){sel.add(new Option('◧ Current scope','__cur__'));sel.add(new Option('Maharashtra (All areas)','__maha__'));});
-  searchIdx.forEach(function(e,gi){if(e.type==='geo'){ca.add(new Option(e.name+' · '+e.tag,gi));cb.add(new Option(e.name+' · '+e.tag,gi));}});
+  var cmpPathA=[],cmpPathB=[];
+  function renderCmpSel(hostId,cpath){
+    var host=document.getElementById(hostId);if(!host)return;host.innerHTML='';
+    for(var lvl=0;lvl<GEO.length;lvl++){
+      if(lvl>cpath.length)break;
+      var saved=path;path=cpath;var opts=geoChildren(lvl);path=saved;
+      var field=GEO[lvl][0],dk=DKf[field];
+      var sel=document.createElement('select');sel.className='mtsel';
+      sel.add(new Option(GEO[lvl][1]+'…',''));
+      opts.forEach(function(c){sel.add(new Option(D[dk][c],c));});
+      sel.value=(cpath[lvl]?cpath[lvl].code:'');
+      (function(lvl){sel.onchange=function(){
+        if(this.value===''){cpath.length=lvl;}
+        else{cpath.length=lvl;cpath.push({lvl:lvl,code:+this.value,name:dispName(GEO[lvl][0],+this.value)});}
+        renderCmpSel(hostId,cpath);
+      };})(lvl);
+      host.appendChild(sel);
+    }
+  }
   var chooser=document.getElementById('cmpChooser');
-  document.getElementById('mCompare').onclick=function(){chooser.style.display='flex';};
+  document.getElementById('mCompare').onclick=function(){renderCmpSel('cmpAsel',cmpPathA);renderCmpSel('cmpBsel',cmpPathB);chooser.style.display='flex';};
   document.getElementById('mBack').onclick=function(){openSingleMaster(compareLeft.slice());};
   document.getElementById('cmpCancel').onclick=function(){chooser.style.display='none';};
+  chooser.querySelectorAll('.cmpcur').forEach(function(b){b.onclick=function(){if(b.getAttribute('data-side')==='A'){cmpPathA=path.slice();renderCmpSel('cmpAsel',cmpPathA);}else{cmpPathB=path.slice();renderCmpSel('cmpBsel',cmpPathB);}};});
   chooser.querySelectorAll('button[data-cmp]').forEach(function(btn){btn.onclick=function(){
     var mode=btn.getAttribute('data-cmp'),aP,bP,lbl;
     if(mode==='parent'){aP=path.slice();bP=path.slice(0,-1);lbl='Compare — scope vs parent';}
     else if(mode==='maha'){aP=path.slice();bP=[];lbl='Compare — scope vs Maharashtra';}
-    else{var _res=function(v){if(v==='__cur__')return {p:path.slice(),n:scopeName()};if(v==='__maha__')return {p:[],n:'Maharashtra'};var e=searchIdx[+v];return {p:buildPathTo(e.lvl,e.code),n:e.name};};var ra=_res(ca.value),rb=_res(cb.value);aP=ra.p;bP=rb.p;lbl='Compare — '+ra.n+' vs '+rb.n;}
+    else{aP=cmpPathA.slice();bP=cmpPathB.slice();lbl='Compare — '+(aP.length?aP[aP.length-1].name:'Maharashtra')+' vs '+(bP.length?bP[bP.length-1].name:'Maharashtra');}
     chooser.style.display='none';openCompare(aP,bP,lbl);
   };});
 })();
