@@ -433,7 +433,7 @@ var GEOMAX=GEO.length-1;
 var DKf={dv:'div',di:'dist',ta:'tal',vi:'vil',pn:'pin',pt:'ptype',ps:'pstatus',bk:'bank',cs:'cstatus'};
 var path=[];
 var viewDim='geo';
-var F={ptype:new Set(),pstatus:new Set(),cstatus:new Set(),cli:new Set(),bank:null,yrMin:null,yrMax:null};
+var F={ptype:new Set(),pstatus:new Set(),cstatus:new Set(),cli:new Set(),bank:null,pin:null,yrMin:null,yrMax:null};
 var sortKey='projects',sortDir=-1;
 var vilPin={};
 (function(){for(var i=0;i<N;i++){if(vilPin[C.vi[i]]===undefined)vilPin[C.vi[i]]=C.pn[i];}})();
@@ -565,7 +565,7 @@ years.forEach(function(y){yrMinSel.add(new Option(y,y));yrMaxSel.add(new Option(
 yrMinSel.value=F.yrMin;yrMaxSel.value=F.yrMax;
 yrMinSel.onchange=function(){F.yrMin=+yrMinSel.value;if(F.yrMin>F.yrMax){F.yrMax=F.yrMin;yrMaxSel.value=F.yrMax;}render();};
 yrMaxSel.onchange=function(){F.yrMax=+yrMaxSel.value;if(F.yrMax<F.yrMin){F.yrMin=F.yrMax;yrMinSel.value=F.yrMin;}render();};
-document.getElementById('resetBtn').onclick=function(){document.querySelectorAll('.side input[type=checkbox]').forEach(function(cb){cb.checked=true;});F.ptype=new Set(D.ptype.map(function(_,i){return i;}));F.pstatus=new Set(D.pstatus.map(function(_,i){return i;}));F.cstatus=new Set(D.cstatus.map(function(_,i){return i;}));F.cli=new Set([0,1]);F.bank=null;F.yrMin=years[0];F.yrMax=years[years.length-1];yrMinSel.value=F.yrMin;yrMaxSel.value=F.yrMax;path=[];viewDim='geo';render();};
+document.getElementById('resetBtn').onclick=function(){document.querySelectorAll('.side input[type=checkbox]').forEach(function(cb){cb.checked=true;});F.ptype=new Set(D.ptype.map(function(_,i){return i;}));F.pstatus=new Set(D.pstatus.map(function(_,i){return i;}));F.cstatus=new Set(D.cstatus.map(function(_,i){return i;}));F.cli=new Set([0,1]);F.bank=null;F.pin=null;F.yrMin=years[0];F.yrMax=years[years.length-1];yrMinSel.value=F.yrMin;yrMaxSel.value=F.yrMax;path=[];viewDim='geo';render();};
 document.getElementById('backBtn').onclick=function(){if(path.length){path.pop();render();}};
 (function(){
   var host=document.getElementById('trendSeries');
@@ -597,6 +597,7 @@ function passFilter(i){
   if(!F.cstatus.has(C.cs[i]))return false;
   if(!F.cli.has(C.cl[i]))return false;
   if(F.bank&&!F.bank.has(C.bk[i]))return false;
+  if(F.pin!=null&&C.pn[i]!==F.pin)return false;
   var y=C.yr[i];if(y<F.yrMin||y>F.yrMax)return false;
   for(var k=0;k<path.length;k++){if(C[GEO[path[k].lvl][0]][i]!==path[k].code)return false;}
   return true;
@@ -790,7 +791,7 @@ function renderDrillbar(){
   var back=document.createElement('button');back.className='drillback';back.innerHTML='‹ Back';back.disabled=path.length===0;
   back.onclick=function(){if(path.length){path.pop();render();}};bar.appendChild(back);
   var root=document.createElement('span');root.className='dpill root';root.textContent='Maharashtra';
-  root.onclick=function(){path=[];render();};bar.appendChild(root);
+  root.onclick=function(){path=[];F.pin=null;render();};bar.appendChild(root);
   path.forEach(function(p,idx){var pill=document.createElement('span');pill.className='dpill'+(idx===path.length-1?' cur':'');
     pill.innerHTML=esc(p.name)+' <span class="x">×</span>';
     pill.querySelector('.x').onclick=function(){path=path.slice(0,idx);render();};
@@ -802,6 +803,7 @@ function renderDrillbar(){
   if(F.ptype.size<D.ptype.length)fpill('Type',Array.from(F.ptype).map(function(i){return D.ptype[i];}).join(', '),function(){F.ptype=new Set(D.ptype.map(function(_,i){return i;}));syncChecks('fType',F.ptype);});
   if(F.pstatus.size<D.pstatus.length)fpill('Status',Array.from(F.pstatus).map(function(i){return D.pstatus[i];}).join(', '),function(){F.pstatus=new Set(D.pstatus.map(function(_,i){return i;}));syncChecks('fPStatus',F.pstatus);});
   if(F.bank)fpill('Bank',Array.from(F.bank).map(function(i){return D.bank[i];}).join(', '),function(){F.bank=null;});
+  if(F.pin!=null)fpill('PIN',D.pin[F.pin],function(){F.pin=null;});
 }
 var searchIdx=[];
 (function(){
@@ -809,11 +811,24 @@ var searchIdx=[];
   D.bank.forEach(function(nm,code){if(nm&&nm!=='(Unknown)')searchIdx.push({label:nm+'  ·  Bank',name:nm,tag:'Bank',type:'bank',code:code});});
 })();
 function applyEntry(e){
-  if(e.type==='geo'){var p=buildPathTo(e.lvl,e.code);if(p.length)path=p;F.bank=null;viewDim='geo';}
+  F.pin=null;
+  if(e.type==='geo'){
+    if(e.lvl===GEOMAX){F.pin=e.code;path=[];F.bank=null;viewDim='geo';}
+    else{var p=buildPathTo(e.lvl,e.code);if(p.length)path=p;F.bank=null;viewDim='geo';}
+  }
   else{F.bank=new Set([e.code]);viewDim='geo';}
   sortKey='projects';sortDir=-1;render();
   var A=aggregate(),t=A.tot;
-  document.getElementById('searchAns').innerHTML='<span class="hl">'+esc(e.name)+'</span> ('+esc(e.tag)+') — <b>'+fmtInt(t.projects)+'</b> projects · <b>'+pct(t.completed,t.projects).toFixed(1)+'%</b> completed · <b>'+pct(t.lapsed,t.projects).toFixed(1)+'%</b> lapsed · avg <b>'+fmt(t.projects?t.units/t.projects:0)+'</b> units/project. The report below reflects this scope.';
+  if(F.pin!=null){
+    // A pincode can physically span several divisions/districts; count ALL rows for it and list each area.
+    var areas={};for(var i=0;i<N;i++){if(passFilter(i)){var k=C.di[i]+'_'+C.dv[i];if(!areas[k])areas[k]={di:C.di[i],dv:C.dv[i],n:0};areas[k].n++;}}
+    var arr=Object.keys(areas).map(function(k){return areas[k];}).sort(function(a,b){return b.n-a.n;});
+    var span=arr.map(function(a){return '<b>'+esc(dispName('di',a.di))+'</b> · '+esc(dispName('dv',a.dv))+' ('+fmtInt(a.n)+')';}).join(', ');
+    var note=arr.length>1?(' — this PIN spans <b>'+arr.length+'</b> areas: '+span+'. Counts are combined across all of them.'):(' in '+span+'.');
+    document.getElementById('searchAns').innerHTML='PIN <span class="hl">'+esc(e.name)+'</span> — <b>'+fmtInt(t.projects)+'</b> projects total · <b>'+pct(t.completed,t.projects).toFixed(1)+'%</b> completed · <b>'+pct(t.lapsed,t.projects).toFixed(1)+'%</b> lapsed'+note+' Cards below break it down by division.';
+  }else{
+    document.getElementById('searchAns').innerHTML='<span class="hl">'+esc(e.name)+'</span> ('+esc(e.tag)+') — <b>'+fmtInt(t.projects)+'</b> projects · <b>'+pct(t.completed,t.projects).toFixed(1)+'%</b> completed · <b>'+pct(t.lapsed,t.projects).toFixed(1)+'%</b> lapsed · avg <b>'+fmt(t.projects?t.units/t.projects:0)+'</b> units/project. The report below reflects this scope.';
+  }
 }
 function renderSug(q){
   var sug=document.getElementById('searchSug');q=(q||'').trim().toLowerCase();
