@@ -319,6 +319,8 @@
   .cmpcur{background:transparent;border:1px solid var(--line);color:var(--yellow2);border-radius:6px;font-size:11px;padding:2px 8px;cursor:pointer}
   .cmpcur:hover{background:var(--yellow);color:#171717;border-color:var(--yellow)}
   .cmpcard{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 13px}
+  .cmprlab{font-size:11px;color:var(--yellow2);font-weight:700;display:inline-flex;align-items:center;gap:4px;cursor:pointer;margin-left:4px}
+  .cmprlab input{accent-color:var(--yellow2)}
   .cmprow{display:flex;align-items:center;gap:10px;margin-bottom:14px}
   .mc-compare{display:flex;gap:22px;align-items:flex-start;justify-content:center;flex-wrap:wrap;padding:0 8px}
   .mc-compare .mcard{flex:1 1 560px;max-width:700px;margin:22px 0}
@@ -431,8 +433,8 @@
     <div class="cmprow"><button class="gbtn" data-cmp="parent">Current vs Parent</button><button class="gbtn" data-cmp="maha">Current vs Maharashtra</button></div>
     <div class="cmprow" style="flex-direction:column;align-items:stretch;gap:10px">
       <span class="muted">Two locations — drill down each side (leave a level blank = broader scope; leave all blank = Maharashtra):</span>
-      <div class="cmpcard"><div class="cmphd">Location A <button type="button" class="cmpcur" data-side="A" data-act="cur">use current scope</button><button type="button" class="cmpcur" data-side="A" data-act="maha">Maharashtra</button></div><div id="cmpAsel" class="cmpsel"></div></div>
-      <div class="cmpcard"><div class="cmphd">Location B <button type="button" class="cmpcur" data-side="B" data-act="cur">use current scope</button><button type="button" class="cmpcur" data-side="B" data-act="maha">Maharashtra</button></div><div id="cmpBsel" class="cmpsel"></div></div>
+      <div class="cmpcard"><div class="cmphd">Location A <button type="button" class="cmpcur" data-side="A" data-act="cur">use current scope</button><button type="button" class="cmpcur" data-side="A" data-act="maha">Maharashtra</button><label class="cmprlab"><input type="checkbox" class="cmprera" data-side="A"> RERA Easy only</label></div><div id="cmpAsel" class="cmpsel"></div></div>
+      <div class="cmpcard"><div class="cmphd">Location B <button type="button" class="cmpcur" data-side="B" data-act="cur">use current scope</button><button type="button" class="cmpcur" data-side="B" data-act="maha">Maharashtra</button><label class="cmprlab"><input type="checkbox" class="cmprera" data-side="B"> RERA Easy only</label></div><div id="cmpBsel" class="cmpsel"></div></div>
       <div><button class="gbtn" data-cmp="two">Compare these</button></div>
     </div>
     <div style="text-align:right"><button class="backbtn" id="cmpCancel">Cancel</button></div></div></div>
@@ -1068,7 +1070,7 @@ function wireMaster(pfx){
     draw();
   })();
 }
-var masterRender=null,masterScopes={},compareLeft=[],compareA=[],compareB=[],masterReraOnly=false,masterMonthYear=null,masterWatch={};
+var masterRender=null,masterScopes={},compareLeft=[],compareA=[],compareB=[],compareReraA=false,compareReraB=false,masterReraMap={},masterReraOnly=false,masterMonthYear=null,masterWatch={};
 function renderWatch(pfx,metric,yr){
   var w=masterWatch[pfx];if(!w)return;
   var el=document.getElementById(pfx+'Watch'),nt=document.getElementById(pfx+'WatchNote');if(!el)return;
@@ -1101,7 +1103,7 @@ function computeMasterTrend(sp){
   }
   path=saved;F.cli=savedCli;return r;
 }
-function scopeAgg(sp){var s={p:path,bk:F.bank,pin:F.pin};path=sp||[];F.bank=null;F.pin=null;var A=aggregate();path=s.p;F.bank=s.bk;F.pin=s.pin;return A;}
+function scopeAgg(sp,rera){var s={p:path,bk:F.bank,pin:F.pin,cli:F.cli};path=sp||[];F.bank=null;F.pin=null;if(rera)F.cli=new Set([1]);var A=aggregate();path=s.p;F.bank=s.bk;F.pin=s.pin;F.cli=s.cli;return A;}
 function diffLine(labels,vals){
   var mob=window.innerWidth<=720,W=mob?560:1200,H=mob?340:280,padL=mob?60:54,padR=20,padT=16,padB=30;
   var plotW=W-padL-padR,plotH=H-padT-padB,mx=1;vals.forEach(function(v){mx=Math.max(mx,Math.abs(v));});
@@ -1119,9 +1121,9 @@ function diffLine(labels,vals){
   return s+'</svg>';
 }
 function cmpYears(A,B){var m={};Object.keys(A.yrMap).forEach(function(y){m[y]=1;});Object.keys(B.yrMap).forEach(function(y){m[y]=1;});return Object.keys(m).map(Number).sort(function(a,b){return a-b;});}
-function compareHeaderHTML(aPath,bPath){
-  var A=scopeAgg(aPath),B=scopeAgg(bPath),ta=A.tot,tb=B.tot;
-  var aN=aPath.length?aPath[aPath.length-1].name:'Maharashtra',bN=bPath.length?bPath[bPath.length-1].name:'Maharashtra';
+function compareHeaderHTML(aPath,bPath,reraA,reraB){
+  var A=scopeAgg(aPath,reraA),B=scopeAgg(bPath,reraB),ta=A.tot,tb=B.tot;
+  var aN=(aPath.length?aPath[aPath.length-1].name:'Maharashtra')+(reraA?' · RERA Easy':''),bN=(bPath.length?bPath[bPath.length-1].name:'Maharashtra')+(reraB?' · RERA Easy':'');
   function avg(t,k){return t.projects?t[k]/t.projects:0;}
   function d(a,b){if(!b)return a?'+∞':'—';var x=(a/b-1)*100;return (x>=0?'+':'')+x.toFixed(0)+'%';}
   var rows=[['Registered projects',fmtInt(ta.projects),fmtInt(tb.projects),d(ta.projects,tb.projects)],
@@ -1138,9 +1140,9 @@ function compareHeaderHTML(aPath,bPath){
   h+='<div style="text-align:right;margin-top:6px"><button class="pvbtn" id="cmpReportBtn">📄 Compare Analysis Report</button></div>';
   return h+'</div></div>';
 }
-function buildCompareReport(aPath,bPath){
-  var A=scopeAgg(aPath),B=scopeAgg(bPath),ta=A.tot,tb=B.tot;
-  var aN=aPath.length?aPath[aPath.length-1].name:'Maharashtra',bN=bPath.length?bPath[bPath.length-1].name:'Maharashtra';
+function buildCompareReport(aPath,bPath,reraA,reraB){
+  var A=scopeAgg(aPath,reraA),B=scopeAgg(bPath,reraB),ta=A.tot,tb=B.tot;
+  var aN=(aPath.length?aPath[aPath.length-1].name:'Maharashtra')+(reraA?' · RERA Easy':''),bN=(bPath.length?bPath[bPath.length-1].name:'Maharashtra')+(reraB?' · RERA Easy':'');
   var Pa=ta.projects||1,Pb=tb.projects||1;
   function avg(t,k){return t.projects?t[k]/t.projects:0;}
   function d(a,b){if(!b)return a?'+∞':'—';var x=(a/b-1)*100;return (x>=0?'+':'')+x.toFixed(0)+'%';}
@@ -1195,7 +1197,8 @@ function buildCompareReport(aPath,bPath){
 function openMaster(html,label){document.getElementById('masterSheet').innerHTML=html;document.getElementById('mtLabel').textContent=label;var mv=document.getElementById('masterView');mv.classList.add('open');mv.scrollTop=0;var a=document.getElementById('mYrMin'),b=document.getElementById('mYrMax');if(a){a.value=F.yrMin;b.value=F.yrMax;}}
 function updateMasterTrends(){
   Object.keys(masterScopes).forEach(function(pfx){
-    var tr=computeMasterTrend(masterScopes[pfx]);
+    var _sr=masterReraOnly;masterReraOnly=!!masterReraMap[pfx];
+    var tr=computeMasterTrend(masterScopes[pfx]);masterReraOnly=_sr;
     var el=document.getElementById(pfx+'Trend');if(el){el.innerHTML=lineChartMulti(tr.labels,tr.series);
       el.querySelectorAll('polyline').forEach(function(poly){var len=poly.getTotalLength();poly.style.strokeDasharray=len;poly.style.strokeDashoffset=len;poly.getBoundingClientRect();poly.style.transition='stroke-dashoffset .9s ease';requestAnimationFrame(function(){poly.style.strokeDashoffset=0;});});}
     var tt=document.getElementById(pfx+'TrendTitle');if(tt)tt.innerHTML=tr.title;
@@ -1207,7 +1210,7 @@ function updateMasterTrends(){
 function openSingleMaster(sp){var rera=masterReraOnly;masterRender=function(){masterScopes={mc:sp};openMaster(masterCardHTML(sp,'mc'),(rera?'RERA Easy Clientele — ':'Master Card — ')+(sp.length?sp[sp.length-1].name:'Maharashtra'));wireMaster('mc');var mb=document.getElementById('mBack');if(mb)mb.style.display='none';};masterRender();}
 function buildMasterCard(){masterReraOnly=false;openSingleMaster(path.slice());}
 function reraPreview(){masterReraOnly=true;openSingleMaster(path.slice());}
-function openCompare(aPath,bPath,label){compareLeft=aPath.slice();compareA=aPath.slice();compareB=bPath.slice();masterRender=function(){masterScopes={mcA:aPath,mcB:bPath};openMaster(compareHeaderHTML(aPath,bPath)+'<div class="mc-compare">'+masterCardHTML(aPath,'mcA')+masterCardHTML(bPath,'mcB')+'</div>',label);wireMaster('mcA');wireMaster('mcB');var rb=document.getElementById('cmpReportBtn');if(rb)rb.onclick=function(){buildCompareReport(compareA,compareB);};var mb=document.getElementById('mBack');if(mb)mb.style.display='';};masterRender();}
+function openCompare(aPath,bPath,label,reraA,reraB){compareLeft=aPath.slice();compareA=aPath.slice();compareB=bPath.slice();compareReraA=!!reraA;compareReraB=!!reraB;masterRender=function(){masterScopes={mcA:aPath,mcB:bPath};masterReraMap={mcA:!!reraA,mcB:!!reraB};masterReraOnly=!!reraA;var hA=masterCardHTML(aPath,'mcA');masterReraOnly=!!reraB;var hB=masterCardHTML(bPath,'mcB');masterReraOnly=false;openMaster(compareHeaderHTML(aPath,bPath,reraA,reraB)+'<div class="mc-compare">'+hA+hB+'</div>',label);wireMaster('mcA');wireMaster('mcB');var rb=document.getElementById('cmpReportBtn');if(rb)rb.onclick=function(){buildCompareReport(compareA,compareB,compareReraA,compareReraB);};var mb=document.getElementById('mBack');if(mb)mb.style.display='';};masterRender();}
 document.getElementById('previewBtn').onclick=buildMasterCard;
 document.getElementById('reraPreviewBtn').onclick=reraPreview;
 document.getElementById('mClose').onclick=function(){document.getElementById('masterView').classList.remove('open');};
@@ -1244,11 +1247,11 @@ document.getElementById('mPrint').onclick=function(){document.body.classList.add
   document.getElementById('cmpCancel').onclick=function(){chooser.style.display='none';};
   chooser.querySelectorAll('.cmpcur').forEach(function(b){b.onclick=function(){var np=b.getAttribute('data-act')==='maha'?[]:path.slice();if(b.getAttribute('data-side')==='A'){cmpPathA=np;renderCmpSel('cmpAsel',cmpPathA);}else{cmpPathB=np;renderCmpSel('cmpBsel',cmpPathB);}};});
   chooser.querySelectorAll('button[data-cmp]').forEach(function(btn){btn.onclick=function(){
-    var mode=btn.getAttribute('data-cmp'),aP,bP,lbl;
+    var mode=btn.getAttribute('data-cmp'),aP,bP,lbl,raA=false,raB=false;
     if(mode==='parent'){aP=path.slice();bP=path.slice(0,-1);lbl='Compare — scope vs parent';}
     else if(mode==='maha'){aP=path.slice();bP=[];lbl='Compare — scope vs Maharashtra';}
-    else{aP=cmpPathA.slice();bP=cmpPathB.slice();lbl='Compare — '+(aP.length?aP[aP.length-1].name:'Maharashtra')+' vs '+(bP.length?bP[bP.length-1].name:'Maharashtra');}
-    chooser.style.display='none';openCompare(aP,bP,lbl);
+    else{aP=cmpPathA.slice();bP=cmpPathB.slice();var cra=chooser.querySelector('.cmprera[data-side="A"]'),crb=chooser.querySelector('.cmprera[data-side="B"]');raA=!!(cra&&cra.checked);raB=!!(crb&&crb.checked);lbl='Compare — '+(aP.length?aP[aP.length-1].name:'Maharashtra')+(raA?' (RERA Easy)':'')+' vs '+(bP.length?bP[bP.length-1].name:'Maharashtra')+(raB?' (RERA Easy)':'');}
+    chooser.style.display='none';openCompare(aP,bP,lbl,raA,raB);
   };});
 })();
 (function(){var tb=document.getElementById('themeBtn');
