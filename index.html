@@ -1127,16 +1127,18 @@ function compareHeaderHTML(aPath,bPath,reraA,reraB,pinA,pinB){
   var aN=(pinA!=null?'PIN '+D.pin[pinA]:(aPath.length?aPath[aPath.length-1].name:'Maharashtra'))+(reraA?' · RERA Easy':''),bN=(pinB!=null?'PIN '+D.pin[pinB]:(bPath.length?bPath[bPath.length-1].name:'Maharashtra'))+(reraB?' · RERA Easy':'');
   function avg(t,k){return t.projects?t[k]/t.projects:0;}
   function d(a,b){if(!b)return a?'+∞':'—';var x=(a/b-1)*100;return (x>=0?'+':'')+x.toFixed(0)+'%';}
-  var rows=[['Registered projects',fmtInt(ta.projects),fmtInt(tb.projects),d(ta.projects,tb.projects)],
-    ['Avg units / project',fmt(avg(ta,'units')),fmt(avg(tb,'units')),d(avg(ta,'units'),avg(tb,'units'))],
-    ['Avg carpet area',fmt(avg(ta,'carpet')),fmt(avg(tb,'carpet')),d(avg(ta,'carpet'),avg(tb,'carpet'))],
-    ['Completion rate',pct(ta.completed,ta.projects).toFixed(1)+'%',pct(tb.completed,tb.projects).toFixed(1)+'%',(pct(ta.completed,ta.projects)-pct(tb.completed,tb.projects)>=0?'+':'')+(pct(ta.completed,ta.projects)-pct(tb.completed,tb.projects)).toFixed(1)+' pp'],
-    ['Lapse rate',pct(ta.lapsed,ta.projects).toFixed(1)+'%',pct(tb.lapsed,tb.projects).toFixed(1)+'%',(pct(ta.lapsed,ta.projects)-pct(tb.lapsed,tb.projects)>=0?'+':'')+(pct(ta.lapsed,ta.projects)-pct(tb.lapsed,tb.projects)).toFixed(1)+' pp'],
-    ['RERA Easy clientele',fmtInt(ta.cliCnt)+' <b style="color:#e0b00d">'+pct(ta.cliCnt,ta.projects).toFixed(1)+'%</b>',fmtInt(tb.cliCnt)+' <b style="color:#e0b00d">'+pct(tb.cliCnt,tb.projects).toFixed(1)+'%</b>',d(ta.cliCnt,tb.cliCnt)]];
+  function shareTxt(x,y){return y?(x/y*100).toFixed(0)+'%':'—';}
+  function pctf(v){return v.toFixed(1)+'%';}
+  var rows=[['Registered projects',ta.projects,tb.projects,fmtInt,''],
+    ['Avg units / project',avg(ta,'units'),avg(tb,'units'),fmt,''],
+    ['Avg carpet area',avg(ta,'carpet'),avg(tb,'carpet'),fmt,''],
+    ['Completion rate',pct(ta.completed,ta.projects),pct(tb.completed,tb.projects),pctf,''],
+    ['Lapse rate',pct(ta.lapsed,ta.projects),pct(tb.lapsed,tb.projects),pctf,''],
+    ['RERA Easy clientele',ta.cliCnt,tb.cliCnt,fmtInt,'rera']];
   var yl=cmpYears(A,B),diff=yl.map(function(y){var a=A.yrMap[y]||0,b=B.yrMap[y]||0;return b?100*(a-b)/b:(a?100:0);});
   var h='<div class="mcard" style="max-width:1040px;margin-bottom:14px"><div class="mc-body" style="padding:18px 26px 22px">';
   h+='<div class="mc-sect"><h3>Head-to-head — '+esc(aN)+' (A) vs '+esc(bN)+' (B)</h3>';
-  h+='<table style="width:100%"><thead><tr><th>Metric</th><th>'+esc(aN)+' (A)</th><th>'+esc(bN)+' (B)</th><th>A vs B</th></tr></thead><tbody>'+rows.map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td><b>'+r[3]+'</b></td></tr>';}).join('')+'</tbody></table></div>';
+  h+='<table style="width:100%"><thead><tr><th>Metric</th><th>'+esc(aN)+' (A)</th><th>'+esc(bN)+' (B)</th></tr></thead><tbody>'+rows.map(function(r){var av=r[3](r[1]),bv=r[3](r[2]);if(r[4]==='rera'){av+=' <b style="color:#e0b00d">'+pctf(pct(ta.cliCnt,ta.projects))+'</b>';bv+=' <b style="color:#e0b00d">'+pctf(pct(tb.cliCnt,tb.projects))+'</b>';}return '<tr><td>'+r[0]+'</td><td>'+av+' <span class="muted">('+shareTxt(r[1],r[2])+' of B)</span></td><td>'+bv+' <span class="muted">('+shareTxt(r[2],r[1])+' of A)</span></td></tr>';}).join('')+'</tbody></table></div>';
   h+='<div class="mc-sect"><h3>Year-wise % difference (A vs B registrations)</h3><div class="mc-panel"><div class="chartbox" style="height:280px">'+diffLine(yl,diff)+'</div><div class="muted" style="font-size:11.5px;margin-top:6px">Positive = A registered more than B that year; negative = fewer.</div></div></div>';
   h+='<div style="text-align:right;margin-top:6px"><button class="pvbtn" id="cmpReportBtn">📄 Compare Analysis Report</button></div>';
   return h+'</div></div>';
@@ -1258,9 +1260,10 @@ document.getElementById('mPrint').onclick=function(){document.body.classList.add
       var aCur=chooser.querySelector('.cmpscope[data-side="A"][data-scope="cur"]'),bCur=chooser.querySelector('.cmpscope[data-side="B"][data-scope="cur"]');
       pinA=(aCur&&aCur.checked)?F.pin:null;pinB=(bCur&&bCur.checked)?F.pin:null;
       var cra=chooser.querySelector('.cmprera[data-side="A"]'),crb=chooser.querySelector('.cmprera[data-side="B"]');raA=!!(cra&&cra.checked);raB=!!(crb&&crb.checked);
-      // a RERA-Easy side with no place of its own inherits the other side's place (Pune vs RERA Easy(Pune))
-      if(raA&&!aP.length&&!pinA&&bP.length)aP=bP.slice();
-      if(raB&&!bP.length&&!pinB&&aP.length)bP=aP.slice();
+      // a RERA-Easy side with no place of its own inherits the other side's place AND pincode
+      // (so after a pincode search, ticking RERA Easy alone shows RERA Easy for that pincode)
+      if(raA&&!aP.length&&pinA==null&&(bP.length||pinB!=null)){aP=bP.slice();pinA=pinB;}
+      if(raB&&!bP.length&&pinB==null&&(aP.length||pinA!=null)){bP=aP.slice();pinB=pinA;}
       lbl='Compare — '+(pinA!=null?'PIN '+D.pin[pinA]:(aP.length?aP[aP.length-1].name:'Maharashtra'))+(raA?' (RERA Easy)':'')+' vs '+(pinB!=null?'PIN '+D.pin[pinB]:(bP.length?bP[bP.length-1].name:'Maharashtra'))+(raB?' (RERA Easy)':'');}
     chooser.style.display='none';openCompare(aP,bP,lbl,raA,raB,pinA,pinB);
   };});
