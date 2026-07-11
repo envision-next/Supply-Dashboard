@@ -3,6 +3,11 @@
 Project: **RERA Easy — Maharashtra real-estate market intelligence** built from a single
 MahaRERA Excel export. Read `README.md` first for the folder map and rebuild commands.
 
+> **New session? Read `PROJECT_STATE.md` next.** It is the up-to-date handoff: current data
+> (53,095 projects), the GitHub repo/Pages deploy, every feature added recently and where its
+> code lives (master card, compare window, reports, pincode `F.pin` fix), the conventions, and
+> the open items. It reflects work done after this file was last revised.
+
 ## Architecture (data flow)
 
 ```
