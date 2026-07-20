@@ -258,13 +258,13 @@
   .sheet .pos{color:#0f8a4f}.sheet .neg{color:#c43b2f}
   .sheet .rfoot{margin-top:34px;border-top:1px solid #e2e9f2;padding-top:12px;color:#6b7a90;font-size:10.5px;display:flex;justify-content:space-between}
   @media print{
-    @page{margin:12mm}
+    @page{margin:0}
     body *{visibility:hidden}#reportView,#reportView *{visibility:visible}
     #reportView{position:absolute;inset:auto;background:#fff}.rtoolbar{display:none}
     body.print-report>*:not(#reportView){display:none!important}
     body.print-report #reportView{position:static!important;inset:auto;height:auto;overflow:visible;background:#fff}
     body.print-report .sheet{margin:0 auto}
-    .sheet{box-shadow:none;margin:0;max-width:none;padding:0 6px}
+    .sheet{box-shadow:none;margin:0;max-width:none;padding:12mm 14mm}
     .sheet *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
     .sheet h2.title,.sheet .rhead{break-after:avoid;break-inside:avoid}
     .sheet h3{break-after:avoid;break-inside:avoid}
@@ -346,7 +346,7 @@
     body.print-master #masterView,body.print-master #masterView *{visibility:visible}
     body.print-master #masterView{position:absolute;inset:auto;background:#fff}
     body.print-master>*:not(#masterView){display:none!important}
-    body.print-master #masterView{position:static!important;height:auto;overflow:visible}
+    body.print-master #masterView{position:static!important;height:auto;overflow:visible;padding:8mm 10mm}
     body.print-master .mtoolbar{display:none}
     body.print-master .mcard{box-shadow:none;margin:0 0 16px;max-width:none;transform:none;opacity:1;border-radius:0}
     body.print-master .mc-compare{display:block;padding:0}
