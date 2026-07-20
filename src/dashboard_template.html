@@ -234,6 +234,9 @@
   .rtoolbar .l{color:#c7cbd2;font-size:12.5px}
   .rtoolbar button{margin-left:8px}
   .sheet{max-width:920px;margin:22px auto;background:#fff;color:#1b2430;padding:50px 58px;box-shadow:0 8px 40px rgba(0,0,0,.4);font-size:13px;line-height:1.55}
+  .prtbl{width:100%;border-collapse:collapse}
+  .prtbl>thead>tr>td,.prtbl>tbody>tr>td,.prtbl>tfoot>tr>td{padding:0;border:0}
+  .prsp{height:0}
   .sheet .rhead{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid var(--yellow);padding-bottom:15px;margin-bottom:8px}
   .sheet .rlogo{display:flex;align-items:center;gap:11px}
   .sheet .rlogo .lg{width:42px;height:42px;border-radius:9px;background:var(--yellow);color:#171717;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px}
@@ -258,13 +261,14 @@
   .sheet .pos{color:#0f8a4f}.sheet .neg{color:#c43b2f}
   .sheet .rfoot{margin-top:34px;border-top:1px solid #e2e9f2;padding-top:12px;color:#6b7a90;font-size:10.5px;display:flex;justify-content:space-between}
   @media print{
-    @page{margin:12mm 13mm}
+    @page{margin:0}
+    .prsp{height:12mm}
     body *{visibility:hidden}#reportView,#reportView *{visibility:visible}
     #reportView{position:absolute;inset:auto;background:#fff}.rtoolbar{display:none}
     body.print-report>*:not(#reportView){display:none!important}
     body.print-report #reportView{position:static!important;inset:auto;height:auto;overflow:visible;background:#fff}
     body.print-report .sheet{margin:0 auto}
-    .sheet{box-shadow:none;margin:0;max-width:none;padding:0 4px}
+    .sheet{box-shadow:none;margin:0;max-width:none;padding:0 13mm}
     .sheet *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
     .sheet h2.title,.sheet .rhead{break-after:avoid;break-inside:avoid}
     .sheet h3{break-after:avoid;break-inside:avoid}
@@ -346,7 +350,7 @@
     body.print-master #masterView,body.print-master #masterView *{visibility:visible}
     body.print-master #masterView{position:absolute;inset:auto;background:#fff}
     body.print-master>*:not(#masterView){display:none!important}
-    body.print-master #masterView{position:static!important;height:auto;overflow:visible;padding:0}
+    body.print-master #masterView{position:static!important;height:auto;overflow:visible;padding:0 8mm}
     body.print-master .mtoolbar{display:none}
     body.print-master .mcard{box-shadow:none;margin:0 0 16px;max-width:none;transform:none;opacity:1;border-radius:0}
     body.print-master .mc-compare{display:block;padding:0}
@@ -441,7 +445,7 @@
 <div id="reportView">
   <div class="rtoolbar"><div class="l" id="rtLabel">Market Intelligence Report</div>
     <div><button class="backbtn" id="rPrint">Print / Save as PDF</button><button class="backbtn" id="rClose">Close</button></div></div>
-  <div class="sheet" id="reportSheet"></div>
+  <table class="prtbl"><thead><tr><td><div class="prsp"></div></td></tr></thead><tbody><tr><td><div class="sheet" id="reportSheet"></div></td></tr></tbody><tfoot><tr><td><div class="prsp"></div></td></tr></tfoot></table>
 </div>
 <div id="masterView">
   <div class="mtoolbar"><div class="l" id="mtLabel">Master Card</div>
@@ -460,7 +464,7 @@
       <div><button class="gbtn" data-cmp="two">Compare these</button></div>
     </div>
     <div style="text-align:right"><button class="backbtn" id="cmpCancel">Cancel</button></div></div></div>
-  <div id="masterSheet"></div>
+  <table class="prtbl"><thead><tr><td><div class="prsp"></div></td></tr></thead><tbody><tr><td><div id="masterSheet"></div></td></tr></tbody><tfoot><tr><td><div class="prsp"></div></td></tr></tfoot></table>
 </div>
 <div id="tip"></div>
 
