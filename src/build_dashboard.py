@@ -15,6 +15,7 @@ def _logo_uri(path):
 # light logo = dark ink (for white surfaces: report sheet); dark logo = white ink (for dark surfaces: header, master card)
 out = out.replace('__LOGO_LIGHT__', _logo_uri('assets/logo-light.png'))
 out = out.replace('__LOGO_DARK__', _logo_uri('assets/logo-dark.png'))
+out = out.replace('__FAVICON__', _logo_uri('assets/favicon.png'))
 dest = 'RERA Market Analysis Dashboard.html'
 open(dest, 'w', encoding='utf-8').write(out)
 # index.html is the same file, served as the GitHub Pages site root so the
