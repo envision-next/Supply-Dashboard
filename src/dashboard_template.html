@@ -261,6 +261,9 @@
     @page{margin:12mm}
     body *{visibility:hidden}#reportView,#reportView *{visibility:visible}
     #reportView{position:absolute;inset:auto;background:#fff}.rtoolbar{display:none}
+    body.print-report>*:not(#reportView){display:none!important}
+    body.print-report #reportView{position:static!important;inset:auto;height:auto;overflow:visible;background:#fff}
+    body.print-report .sheet{margin:0 auto}
     .sheet{box-shadow:none;margin:0;max-width:none;padding:0 6px}
     .sheet *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
     .sheet h2.title,.sheet .rhead{break-after:avoid;break-inside:avoid}
@@ -342,6 +345,8 @@
   @media print{
     body.print-master #masterView,body.print-master #masterView *{visibility:visible}
     body.print-master #masterView{position:absolute;inset:auto;background:#fff}
+    body.print-master>*:not(#masterView){display:none!important}
+    body.print-master #masterView{position:static!important;height:auto;overflow:visible}
     body.print-master .mtoolbar{display:none}
     body.print-master .mcard{box-shadow:none;margin:0 0 16px;max-width:none;transform:none;opacity:1;border-radius:0}
     body.print-master .mc-compare{display:block;padding:0}
@@ -1011,7 +1016,7 @@ function buildReport(){
 }
 document.getElementById('genReportBtn').onclick=buildReport;
 document.getElementById('rClose').onclick=function(){document.getElementById('reportView').classList.remove('open');};
-document.getElementById('rPrint').onclick=function(){window.print();};
+document.getElementById('rPrint').onclick=function(){document.body.classList.add('print-report');window.print();document.body.classList.remove('print-report');};
 
 function countUp(el){
   var target=parseFloat(el.getAttribute('data-count'))||0,fid=el.getAttribute('data-fmt'),dur=900,t0=Date.now();
