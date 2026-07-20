@@ -258,10 +258,18 @@
   .sheet .pos{color:#0f8a4f}.sheet .neg{color:#c43b2f}
   .sheet .rfoot{margin-top:34px;border-top:1px solid #e2e9f2;padding-top:12px;color:#6b7a90;font-size:10.5px;display:flex;justify-content:space-between}
   @media print{
+    @page{margin:12mm}
     body *{visibility:hidden}#reportView,#reportView *{visibility:visible}
     #reportView{position:absolute;inset:auto;background:#fff}.rtoolbar{display:none}
     .sheet{box-shadow:none;margin:0;max-width:none;padding:0 6px}
-    .sheet h3{break-after:avoid}.sheet table,.sheet .kgrid{break-inside:avoid}
+    .sheet *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .sheet h2.title,.sheet .rhead{break-after:avoid;break-inside:avoid}
+    .sheet h3{break-after:avoid;break-inside:avoid}
+    .sheet .kgrid{break-inside:avoid}
+    .sheet table{break-inside:auto}
+    .sheet tr{break-inside:avoid}
+    .sheet thead{display:table-header-group}
+    .sheet p,.sheet li{orphans:3;widows:3}
   }
 
   /* ---- Master Card (animated supply showcase) ---- */
@@ -335,7 +343,15 @@
     body.print-master #masterView,body.print-master #masterView *{visibility:visible}
     body.print-master #masterView{position:absolute;inset:auto;background:#fff}
     body.print-master .mtoolbar{display:none}
-    body.print-master .mcard{box-shadow:none;margin:0;max-width:none;transform:none;opacity:1}
+    body.print-master .mcard{box-shadow:none;margin:0 0 16px;max-width:none;transform:none;opacity:1;border-radius:0}
+    body.print-master .mc-compare{display:block;padding:0}
+    body.print-master .mc-compare .mcard{max-width:none;margin:0 0 16px;break-after:page}
+    body.print-master .mc-sect{opacity:1!important;transform:none!important;animation:none!important;break-inside:avoid}
+    body.print-master .mc-sect h3{break-after:avoid}
+    body.print-master table{break-inside:auto}
+    body.print-master tr{break-inside:avoid}
+    body.print-master thead{display:table-header-group}
+    body.print-master #masterView *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   }
 </style>
 </head>
@@ -914,6 +930,8 @@ function buildReport(){
   var resShare=pct((A.typeCnt[D.ptype.indexOf('Residential / Group Housing')]||0),P);
   var bk=Object.keys(A.bankCnt).map(function(k){return {name:D.bank[+k],c:A.bankCnt[k]};}).sort(function(a,b){return b.c-a.c;}).slice(0,5);
   var dd=currentLevel()<GEOMAX;
+  var _rp=path,_rb=F.bank,_rpin=F.pin;path=[];F.bank=null;F.pin=null;var _MH=aggregate().tot;path=_rp;F.bank=_rb;F.pin=_rpin;
+  var mhP=_MH.projects||1,mhComp=pct(_MH.completed,mhP),mhLapse=pct(_MH.lapsed,mhP),mhDays=_MH.daysCnt?_MH.daysSum/_MH.daysCnt:0,mhCmpl=_MH.complaints/mhP,mhUnits=_MH.units/mhP,mhPen=pct(_MH.cliCnt,mhP);
   var h='';
   h+='<div class="rhead"><div class="rlogo"><img class="rlogoimg" src="__LOGO_LIGHT__" alt="RERA Easy"></div><div style="text-align:right;font-size:11px;color:#6b7a90">Report generated<br><b style="color:#171717">'+new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})+'</b></div></div>';
   h+='<h2 class="title">Market Analysis - '+esc(scopeName())+'</h2>';
@@ -921,6 +939,18 @@ function buildReport(){
   h+='<h3>1. Executive Summary</h3>';
   h+='<p><b>'+esc(scopeName())+'</b> records <b>'+fmtInt(P)+' RERA-registered projects</b> in scope, representing <b>'+fmt(t.units)+' units</b> across <b>'+fmt(t.carpet)+' sq. m</b> of carpet area and <b>'+fmt(t.builtup)+' sq. m</b> of sanctioned built-up area. The market is '+(resShare>=55?'predominantly residential':'a mixed-use market')+', with residential / group housing at <b>'+resShare.toFixed(0)+'%</b> of registrations. Delivery shows a <b>'+compRate.toFixed(1)+'% completion rate</b> and <b>'+lapseRate.toFixed(1)+'% lapse rate</b>, averaging <b>'+fmtInt(avgDays)+' days ('+(avgDays/365).toFixed(1)+' years)</b> to complete. Registration momentum (2023-25 vs 2020-22) is <b class="'+(momentum>=0?'pos':'neg')+'">'+(momentum>=0?'+':'')+momentum.toFixed(0)+'%</b>.</p>';
   h+='<div class="kgrid">'+kbox('Registered Projects',fmtInt(P),'')+kbox('Total Units',fmt(t.units),(t.units/P).toFixed(0)+' avg / project')+kbox('Carpet Area',fmt(t.carpet),'sq. m')+kbox('Completion Rate',compRate.toFixed(1)+'%',fmtInt(t.completed)+' completed')+kbox('Lapse Rate',lapseRate.toFixed(1)+'%',fmtInt(t.lapsed)+' lapsed')+kbox('Avg. Completion',(avgDays/365).toFixed(1)+' yrs',fmtInt(avgDays)+' days')+'</div>';
+  if(path.length||F.pin!=null||F.bank){
+    var bmk=function(l,v,m,unit,loGood,dec){var dv=v-m;var good=loGood?dv<=0:dv>=0;var col=good?'#0f8a4f':'#c43b2f';return '<tr><td>'+l+'</td><td><b>'+v.toFixed(dec)+unit+'</b></td><td>'+m.toFixed(dec)+unit+'</td><td><b style="color:'+col+'">'+(dv>=0?'▲ +':'▼ −')+Math.abs(dv).toFixed(dec)+(unit==='%'?' pp':unit)+'</b></td></tr>';};
+    h+='<p style="margin-top:14px"><b>Benchmark vs Maharashtra.</b> This scope against the state average — green = favourable, red = unfavourable.</p>';
+    h+='<table><thead><tr><th>Indicator</th><th>'+esc(scopeName())+'</th><th>Maharashtra</th><th>Gap</th></tr></thead><tbody>'
+     +bmk('Completion rate',compRate,mhComp,'%',false,1)
+     +bmk('Lapse rate',lapseRate,mhLapse,'%',true,1)
+     +((avgDays&&mhDays)?bmk('Avg days to complete',avgDays,mhDays,'',true,0):'')
+     +bmk('Complaints / project',t.complaints/P,mhCmpl,'',true,2)
+     +bmk('Avg units / project',t.units/P,mhUnits,'',false,0)
+     +bmk('RERA Easy penetration',pct(t.cliCnt,P),mhPen,'%',false,1)
+     +'</tbody></table>';
+  }
   h+='<h3>2. Market Size & Supply Composition</h3>';
   h+='<table><thead><tr><th>Project Type</th><th>Projects</th><th>Share</th></tr></thead><tbody>'+typeRows.map(function(r){return '<tr><td>'+esc(r.nm)+'</td><td>'+fmtInt(r.c)+'</td><td>'+pct(r.c,P).toFixed(1)+'%</td></tr>';}).join('')+'</tbody></table>';
   h+='<p>Average project size is <b>'+(t.units/P).toFixed(0)+' units</b> and <b>'+fmt(t.carpet/P)+' sq. m</b> of carpet area. Total land area in scope is <b>'+fmt(t.land)+' sq. m</b>.</p>';
@@ -934,22 +964,45 @@ function buildReport(){
   h+='<table><thead><tr><th>Bank</th><th>Projects</th><th>Share</th></tr></thead><tbody>'+bk.map(function(b){return '<tr><td>'+esc(b.name)+'</td><td>'+fmtInt(b.c)+'</td><td>'+pct(b.c,P).toFixed(1)+'%</td></tr>';}).join('')+'</tbody></table>';
   h+='<h3>'+(dd?'6':'5')+'. Delivery Health & Risk</h3>';
   h+='<p>Of '+fmtInt(P)+' projects, <b class="pos">'+fmtInt(t.completed)+' ('+compRate.toFixed(1)+'%)</b> completed, <b>'+fmtInt(t.active)+' ('+activeRate.toFixed(1)+'%)</b> active, and <b class="neg">'+fmtInt(t.lapsed)+' ('+lapseRate.toFixed(1)+'%)</b> lapsed. Complaints total <b>'+fmtInt(t.complaints)+'</b> ('+pct(t.complaints,P).toFixed(2)+' per project).</p>';
-  if(dd&&risk.length){h+='<p><span class="flag neg">Higher-risk '+subLabel.toLowerCase()+'s (lapse rate, >='+minN+' projects):</span></p><ul>'+risk.map(function(g){return '<li><b>'+esc(g.name)+'</b> - '+g.lapseRate.toFixed(0)+'% lapsed, '+g.compRate.toFixed(0)+'% completed ('+fmtInt(g.projects)+' projects)</li>';}).join('')+'</ul>';
-    h+='<p><span class="flag pos">Most reliable delivery:</span></p><ul>'+reliable.map(function(g){return '<li><b>'+esc(g.name)+'</b> - '+g.compRate.toFixed(0)+'% completed, '+g.lapseRate.toFixed(0)+'% lapsed ('+fmtInt(g.projects)+' projects)</li>';}).join('')+'</ul>';}
-  h+='<h3>'+(dd?'7':'6')+'. Opportunity & BD Recommendations</h3><ul>';
-  if(dd&&biggest.length)h+='<li><b>Anchor markets:</b> '+biggest.map(function(g){return esc(g.name)+' ('+pct(g.projects,P).toFixed(0)+'%)';}).join(', ')+' carry the bulk of supply - prioritise for volume campaigns.</li>';
+  if(dd&&elig.length>=2){
+    var _nrm=function(vals){var mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals);return vals.map(function(v){return mx>mn?100*(v-mn)/(mx-mn):0;});};
+    var _nL=_nrm(elig.map(function(g){return g.lapseRate;})),_nS=_nrm(elig.map(function(g){return 100-g.compRate;})),_nX=_nrm(elig.map(function(g){return g.complaints;}));
+    elig.forEach(function(g,i){g._dri=0.5*_nL[i]+0.3*_nS[i]+0.2*_nX[i];var cc=[['high lapse',_nL[i]*0.5],['low completion',_nS[i]*0.3],['complaint intensity',_nX[i]*0.2]];cc.sort(function(x,y){return y[1]-x[1];});g._why=cc[0][0];});
+    var hiR=elig.slice().sort(function(a,b){return b._dri-a._dri;}).slice(0,5);
+    var loR=elig.slice().sort(function(a,b){return a._dri-b._dri;}).slice(0,5);
+    var _dp=function(v,base,loGood){var dv=v-base;var col=(loGood?dv<=0:dv>=0)?'#0f8a4f':'#c43b2f';return '<span style="color:'+col+';font-size:10.5px">('+(dv>=0?'+':'')+dv.toFixed(1)+' pp)</span>';};
+    h+='<p><span class="flag neg">Delivery-risk watchlist — composite risk index (≥'+minN+' projects per '+subLabel.toLowerCase()+'):</span></p>';
+    h+='<table><thead><tr><th>'+subLabel+'</th><th>Projects</th><th>Risk index</th><th>Lapse % (vs scope)</th><th>Compl % (vs scope)</th><th>Complaints/proj</th><th>Primary signal</th></tr></thead><tbody>'+hiR.map(function(g){return '<tr><td><b>'+esc(g.name)+'</b></td><td>'+fmtInt(g.projects)+'</td><td><b>'+g._dri.toFixed(0)+'</b>/100</td><td>'+g.lapseRate.toFixed(1)+'% '+_dp(g.lapseRate,lapseRate,true)+'</td><td>'+g.compRate.toFixed(1)+'% '+_dp(g.compRate,compRate,false)+'</td><td>'+g.complaints.toFixed(2)+'</td><td>'+g._why+'</td></tr>';}).join('')+'</tbody></table>';
+    h+='<p><span class="flag pos">Most reliable delivery (lowest risk index):</span></p>';
+    h+='<table><thead><tr><th>'+subLabel+'</th><th>Projects</th><th>Risk index</th><th>Compl %</th><th>Lapse %</th></tr></thead><tbody>'+loR.map(function(g){return '<tr><td><b>'+esc(g.name)+'</b></td><td>'+fmtInt(g.projects)+'</td><td><b>'+g._dri.toFixed(0)+'</b>/100</td><td class="pos">'+g.compRate.toFixed(1)+'%</td><td>'+g.lapseRate.toFixed(1)+'%</td></tr>';}).join('')+'</tbody></table>';
+    h+='<p class="muted" style="font-size:11px">Risk index blends lapse rate (50%), completion shortfall (30%) and complaint intensity (20%), min–max scaled within this peer set (0 = strongest peer, 100 = weakest). It ranks peers relatively — it is not an absolute default probability.</p>';
+  }
+  h+='<h3>'+(dd?'7':'6')+'. Strategic Playbook — Opportunities & Actions</h3><ul>';
+  if(dd&&biggest.length)h+='<li><b>Volume plays (anchor markets):</b> '+biggest.map(function(g){return esc(g.name)+' ('+pct(g.projects,P).toFixed(0)+'%)';}).join(', ')+' carry the bulk of supply — prioritise for volume campaigns, flagship developer relationships and channel presence.</li>';
   if(dd){var hb=elig.slice().sort(function(a,b){return b.projects-a.projects;}).filter(function(g){return g.compRate>=compRate&&g.lapseRate<=lapseRate;}).slice(0,4);
-    if(hb.length)h+='<li><b>Quality-growth targets:</b> '+hb.map(function(g){return esc(g.name);}).join(', ')+' combine scale with strong delivery - ideal for premium positioning.</li>';
-    if(risk.length)h+='<li><b>Diligence flags:</b> caution in '+risk.slice(0,3).map(function(g){return esc(g.name);}).join(', ')+' (high lapse) - use delivery certainty as a differentiator.</li>';}
-  h+='<li><b>Banking relationships:</b> '+bk.slice(0,3).map(function(b){return esc(b.name);}).join(', ')+' are the most active project lenders in scope - useful for channel partnerships.</li>';
-  h+='<li><b>Demand signal:</b> momentum '+(momentum>=0?'positive (+'+momentum.toFixed(0)+'%)':momentum.toFixed(0)+'%')+' - '+(momentum>=0?'lean into expansion narratives.':'position around absorption and completion-led demand.')+'</li>';
-  h+='<li><b>Product mix:</b> residential at '+resShare.toFixed(0)+'% - '+(resShare>=60?'core focus; commercial/mixed a niche.':'meaningful non-residential activity worth dedicated outreach.')+'</li>';
+    if(hb.length)h+='<li><b>Premium plays (quality-growth targets):</b> '+hb.map(function(g){return esc(g.name);}).join(', ')+' combine scale with above-average completion and below-average lapse — pitch premium positioning and delivery-certainty messaging here first.</li>';
+    if(risk.length)h+='<li><b>Defensive plays (diligence flags):</b> tighten diligence in '+risk.slice(0,3).map(function(g){return esc(g.name);}).join(', ')+' where lapse runs high — convert delivery certainty into the differentiator in these pitches.</li>';}
+  h+='<li><b>Channel strategy:</b> '+bk.slice(0,3).map(function(b){return esc(b.name);}).join(', ')+' are the most active project lenders in scope — priority targets for referral and co-marketing partnerships.</li>';
+  h+='<li><b>Demand narrative:</b> momentum is '+(momentum>=0?'positive (+'+momentum.toFixed(0)+'%)':''+momentum.toFixed(0)+'%')+' — '+(momentum>=0?'lead with expansion and new-launch narratives.':'position around absorption, completions and delivery-led demand rather than fresh supply.')+'</li>';
+  h+='<li><b>Product mix:</b> residential at '+resShare.toFixed(0)+'% of registrations — '+(resShare>=60?'core campaign focus; treat commercial / plotted / mixed as a differentiated niche.':'meaningful non-residential activity worth dedicated, separately-messaged outreach.')+'</li>';
+  h+='<li><b>White space:</b> RERA Easy penetration is '+pct(t.cliCnt,P).toFixed(1)+'% in scope vs '+mhPen.toFixed(1)+'% statewide — '+(pct(t.cliCnt,P)>=mhPen?'an above-par footprint; compound it with referrals and case studies.':'below the state par; a quantified growth runway of ~'+fmtInt(Math.max(0,Math.round(P*(mhPen-pct(t.cliCnt,P))/100)))+' projects to reach par penetration.')+'</li>';
   h+='</ul>';
+  h+='<p><b>KPIs to monitor (quarterly):</b> new registrations vs the '+mwLabel(MW_RE)+' run-rate; completion / lapse movement in pp against the '+compRate.toFixed(1)+'% / '+lapseRate.toFixed(1)+'% baseline; complaint intensity vs '+(t.complaints/P).toFixed(2)+' per project; RERA Easy penetration vs '+pct(t.cliCnt,P).toFixed(1)+'%; and risk-index migrations — which '+subLabel.toLowerCase()+'s enter or exit the top-5 watchlist.</p>';
   h+='<h3>RERA Easy Clientele Footprint</h3><p>Within scope, <b>'+fmtInt(t.cliCnt)+'</b> projects (<b>'+pct(t.cliCnt,P).toFixed(1)+'%</b> of supply) are RERA Easy clientele. '+(pct(t.cliCnt,P)>=8?'A strong existing footprint — leverage referrals, testimonials and case studies to compound share here.':'Penetration is modest — a clear white-space to grow RERA Easy relationships and win new mandates.')+'</p>';
   h+='<h3>Built Form & Density</h3><p>The average in-scope project spans <b>'+fmt(t.units/P)+'</b> units on <b>'+fmt(t.land/P)+' sq. m</b> of land, delivering <b>'+fmt(t.carpet/P)+' sq. m</b> carpet and <b>'+fmt(t.builtup/P)+' sq. m</b> sanctioned built-up per project (carpet ≈ <b>'+(t.builtup>0?pct(t.carpet,t.builtup).toFixed(0):'-')+'%</b> of built-up). Total in-scope footprint: <b>'+fmt(t.land)+' sq. m</b> land and <b>'+fmt(t.builtup)+' sq. m</b> built-up.</p>';
   var top10=byProj.slice(0,10).reduce(function(s,g){return s+g.projects;},0);
-  var _rp=path,_rb=F.bank,_rpin=F.pin;path=[];F.bank=null;F.pin=null;var _MH=aggregate().tot;path=_rp;F.bank=_rb;F.pin=_rpin;
   h+='<h3>Market Concentration &amp; Positioning</h3><p>Top 3 '+subLabel.toLowerCase()+'s hold <b>'+pct(top3,P).toFixed(1)+'%</b>, top 5 <b>'+pct(top5,P).toFixed(1)+'%</b>, top 10 <b>'+pct(top10,P).toFixed(1)+'%</b> of scope registrations — '+(pct(top5,P)>=65?'a concentrated market where a handful of micro-markets dominate supply.':'a comparatively distributed market with supply spread across many micro-markets.')+' This scope is <b>'+pct(P,_MH.projects).toFixed(2)+'%</b> of all '+fmtInt(_MH.projects)+' Maharashtra registrations, averaging <b>'+fmt(t.units/P)+'</b> units and <b>'+fmt(t.carpet/P)+' sq. m</b> carpet per project.</p>';
+  h+='<h3>Methodology, Definitions & Analytical Notes</h3>';
+  h+='<p>This report is computed live from the MahaRERA project registry ('+fmtInt(_MH.projects)+' registered projects statewide, '+YR_MIN+'–'+YR_MAX+') with the scope and filters shown in the header applied. All percentages use registered projects in scope as the denominator unless stated otherwise; per-project averages normalise for market size and are the fair basis for comparing scopes of different scale.</p>';
+  h+='<ul style="font-size:12px;line-height:1.7">'
+   +'<li><b>Completion / lapse / active rate</b> — share of in-scope projects by current RERA status. Completion measures converted supply; lapse measures registrations that failed to remain in force — together they are the two poles of delivery reliability.</li>'
+   +'<li><b>Avg days to complete</b> — completed projects only (missing values excluded). Conditioning on completion introduces survivorship bias, so true expected timelines are longer than shown.</li>'
+   +'<li><b>Carpet vs built-up</b> — carpet is usable area, built-up is sanctioned construction; carpet ÷ built-up approximates saleable-space efficiency.</li>'
+   +'<li><b>Complaints / project</b> — cumulative registry complaints over in-scope projects; a customer-friction proxy, not adjudicated outcomes.</li>'
+   +'<li><b>Momentum</b> — registrations '+mwLabel(MW_RE)+' vs '+mwLabel(MW_PR)+'. '+YR_MAX+' (year-to-date) and the '+YR_MIN+' launch backlog are deliberately excluded from the windows.</li>'
+   +'<li><b>Concentration</b> — top-N share of scope registrations; a top-5 share above ~65% is treated as a concentrated market.</li>'
+   +'<li><b>Data hygiene</b> — records with corrupt carpet-area or negative completion-day values are excluded from those metrics only; every project is retained in counts.</li>'
+   +'</ul>';
   h+=disclaimerHTML();
   h+='<div class="rfoot"><span>RERA Easy - Confidential | Pune +91 91384 90809 · Mumbai +91 99879 57851</span><span>Source: MahaRERA registry, 2017-2026</span></div>';
   document.getElementById('reportSheet').innerHTML=h;
@@ -1001,7 +1054,7 @@ function masterCardHTML(scopePath,pfx){
   // per-child per-year counts within scope for the delivery-risk watchlist growth metric
   var childYr={};for(var _i=0;_i<N;_i++){if(passFilter(_i)){var _gc=C[gfield][_i],_yy=C.yr[_i];(childYr[_gc]||(childYr[_gc]={}))[_yy]=(childYr[_gc][_yy]||0)+1;}}
   var minN=Math.max(8,Math.round(P*0.004));
-  masterWatch[pfx]={groups:groups,childYr:childYr,ys:ys,subLabel:subLabel,minN:minN};
+  masterWatch[pfx]={groups:groups,childYr:childYr,ys:ys,subLabel:subLabel,minN:minN,avgLapse:lapseRate,avgComp:compRate,avgCmpl:avgCmpl};
   var h='<div class="mcard" id="'+pfx+'Wrap">';
   h+='<div class="mc-head"><div><div class="mc-brand"><img class="mclogoimg" src="__LOGO_DARK__" alt="RERA Easy"></div>';
   h+='<div class="mc-title">'+esc(scName)+'</div>';
@@ -1043,14 +1096,8 @@ function masterCardHTML(scopePath,pfx){
        barH(bk.map(function(b,i){return {label:b.name,value:b.c,color:palette[i%palette.length]};}))+'</div></div>'+
      '</div><div class="mc-panel" style="margin-top:18px"><h4>Project type mix</h4><div class="chartbox" style="height:220px" id="'+pfx+'Type">'+
        donut(typeMix,'Projects',pfx+'pt')+'</div></div></div>';
-  h+='<div class="mc-sect" style="animation-delay:.30s"><h3>Delivery-risk watchlist — weakest '+esc(subLabel)+'s</h3><div class="mc-panel"><div class="mc-wtabs">'+
-     '<button class="mc-wm on" data-m="composite">Risk score</button>'+
-     '<button class="mc-wm" data-m="lapse">Lapse %</button>'+
-     '<button class="mc-wm" data-m="lowcomp">Low completion %</button>'+
-     '<button class="mc-wm" data-m="growth">Weakest YoY growth</button>'+
-     '<select class="mc-wyr" style="margin-left:auto;width:auto;padding:4px 8px;font-size:12px">'+ys.slice(1).map(function(y){return '<option value="'+y+'"'+(y===ys[ys.length-1]?' selected':'')+'>YoY '+y+'</option>';}).join('')+'</select>'+
-     '</div><div class="chartbox" style="height:300px" id="'+pfx+'Watch"></div>'+
-     '<div class="muted" id="'+pfx+'WatchNote" style="font-size:11.5px;margin-top:6px"></div></div></div>';
+  h+='<div class="mc-sect" style="animation-delay:.30s"><h3>Delivery-risk watchlist — '+esc(subLabel)+' risk ranking</h3><div class="mc-panel"><div id="'+pfx+'Watch" style="overflow-x:auto"></div>'+
+     '<div class="muted" id="'+pfx+'WatchNote" style="font-size:11px;margin-top:8px;line-height:1.6"></div></div></div>';
   h+='<div class="mc-foot"><span>RERA Easy · Confidential — MahaRERA registry (2017–2026)</span><span>'+fmtInt(P)+' projects in scope</span></div>';
   h+='</div></div>';
   path=saved;F.cli=savedCli;return h;
@@ -1064,26 +1111,46 @@ function wireMaster(pfx){
   wrap.querySelectorAll('.mc-mth').forEach(function(sel){sel.onchange=function(){masterMonthYear=sel.value?+sel.value:null;updateMasterTrends();};});
   wrap.querySelectorAll('#'+pfx+'Trend polyline').forEach(function(poly){var len=poly.getTotalLength();poly.style.strokeDasharray=len;poly.style.strokeDashoffset=len;poly.getBoundingClientRect();poly.style.transition='stroke-dashoffset 1.1s ease .2s';requestAnimationFrame(function(){poly.style.strokeDashoffset=0;});});
   [pfx+'Sub',pfx+'Bank'].forEach(function(id){var svg=document.querySelector('#'+id+' svg');if(!svg)return;svg.querySelectorAll('rect').forEach(function(r){if(r.getAttribute('rx')==='4'){r.style.transformBox='fill-box';r.style.transformOrigin='left';r.style.transform='scaleX(0)';r.style.transition='transform .9s cubic-bezier(.2,.7,.2,1) .25s';requestAnimationFrame(function(){r.style.transform='scaleX(1)';});}});});
-  (function(){var yrSel=wrap.querySelector('.mc-wyr'),cur='composite';
-    function draw(){renderWatch(pfx,cur,yrSel?yrSel.value:null);}
-    wrap.querySelectorAll('.mc-wm').forEach(function(b){b.onclick=function(){wrap.querySelectorAll('.mc-wm').forEach(function(x){x.classList.remove('on');});b.classList.add('on');cur=b.getAttribute('data-m');draw();};});
-    if(yrSel)yrSel.onchange=draw;
-    draw();
-  })();
+  renderWatch(pfx);
 }
 var masterRender=null,masterScopes={},compareLeft=[],compareA=[],compareB=[],compareReraA=false,compareReraB=false,compareA_pin=null,compareB_pin=null,masterReraMap={},masterPinMap={},masterReraOnly=false,masterMonthYear=null,masterWatch={};
-function renderWatch(pfx,metric,yr){
+function renderWatch(pfx){
   var w=masterWatch[pfx];if(!w)return;
   var el=document.getElementById(pfx+'Watch'),nt=document.getElementById(pfx+'WatchNote');if(!el)return;
   var sub=w.subLabel.toLowerCase();
   var elig=w.groups.filter(function(g){return g.projects>=w.minN;});
-  if(!elig.length){el.innerHTML='<div class="muted" style="padding:22px 6px">Not enough data at this level (need ≥'+w.minN+' projects per '+sub+' to rank fairly).</div>';if(nt)nt.innerHTML='';return;}
-  var items=[],note='';
-  if(metric==='lapse'){elig.sort(function(a,b){return b.lapseRate-a.lapseRate;});items=elig.slice(0,10).map(function(g){return {label:g.name,value:+g.lapseRate.toFixed(1),color:'#e5484d'};});note='Highest lapse rate — % of projects that lapsed (min '+w.minN+' projects per '+sub+').';}
-  else if(metric==='lowcomp'){elig.sort(function(a,b){return a.compRate-b.compRate;});items=elig.slice(0,10).map(function(g){return {label:g.name,value:+g.compRate.toFixed(1),color:'#e5a23a'};});note='Lowest completion rate (%) — weakest delivery first.';}
-  else if(metric==='growth'){var y1=+yr,y0=y1-1;var arr=elig.map(function(g){var cy=w.childYr[g.code]||{},c1=cy[y1]||0,c0=cy[y0]||0;var gr=c0?100*(c1-c0)/c0:(c1?100:0);return {label:g.name,value:+gr.toFixed(0),color:gr<0?'#e5484d':'#23a55a',_c0:c0,_c1:c1};});arr=arr.filter(function(x){return x._c0>0||x._c1>0;}).sort(function(a,b){return a.value-b.value;});items=arr.slice(0,10);note='Year-over-year registration growth '+y0+'→'+y1+' — weakest first. Red = decline.';if(!items.length){el.innerHTML='<div class="muted" style="padding:22px 6px">No two-year window available for '+y1+'.</div>';if(nt)nt.innerHTML='';return;}}
-  else{elig.forEach(function(g){g._risk=g.lapseRate+(100-g.compRate)*0.6+g.complaints*8;});elig.sort(function(a,b){return b._risk-a._risk;});items=elig.slice(0,10).map(function(g){return {label:g.name,value:+g._risk.toFixed(0),color:'#e5484d'};});note='Composite risk score = lapse% + 0.6·(100−completion%) + 8·complaints/project. Higher = weaker delivery health.';}
-  el.innerHTML=barH(items);if(nt)nt.innerHTML=note;
+  if(elig.length<2){el.innerHTML='<div class="muted" style="padding:22px 6px">Not enough data at this level (need ≥'+w.minN+' projects per '+sub+' and at least 2 peers to rank fairly).</div>';if(nt)nt.innerHTML='';return;}
+  var rows=elig.map(function(g){
+    var cy=w.childYr[g.code]||{};
+    var re=sumYrs(cy,MW_RE[0],MW_RE[1]),pr=sumYrs(cy,MW_PR[0],MW_PR[1]);
+    var mom=pr>0?100*(re-pr)/pr:(re>0?100:0);
+    return{name:g.name,p:g.projects,lapse:g.lapseRate,comp:g.compRate,cmpl:g.complaints,mom:mom};});
+  function norm(vals){var mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals);return vals.map(function(v){return mx>mn?100*(v-mn)/(mx-mn):0;});}
+  var nL=norm(rows.map(function(r){return r.lapse;}));
+  var nC=norm(rows.map(function(r){return 100-r.comp;}));
+  var nX=norm(rows.map(function(r){return r.cmpl;}));
+  var nM=norm(rows.map(function(r){return -r.mom;}));
+  rows.forEach(function(r,i){r.dri=0.40*nL[i]+0.25*nC[i]+0.20*nX[i]+0.15*nM[i];
+    var comp=[['high lapse',nL[i]*0.40],['low completion',nC[i]*0.25],['complaint intensity',nX[i]*0.20],['falling registrations',nM[i]*0.15]];
+    comp.sort(function(a,b){return b[1]-a[1];});r.why=comp[0][0];});
+  rows.sort(function(a,b){return b.dri-a.dri;});
+  function band(d){return d>=70?['CRITICAL','#e5484d']:d>=45?['ELEVATED','#e5a23a']:d>=25?['WATCH','#e0b00d']:['STABLE','#23a55a'];}
+  function dpp(v,base,loGood){var dv=v-base;var col=(loGood?dv<=0:dv>=0)?'#0f8a4f':'#c43b2f';return '<span style="color:'+col+';font-size:10.5px">('+(dv>=0?'+':'')+dv.toFixed(1)+' pp)</span>';}
+  var top=rows.slice(0,8);
+  var h='<table style="width:100%;font-size:11.5px"><thead><tr><th>#</th><th>'+esc(w.subLabel)+'</th><th>Proj</th><th>Risk index</th><th>Lapse % <span style="font-weight:400">(vs avg)</span></th><th>Compl % <span style="font-weight:400">(vs avg)</span></th><th>Compl./proj</th><th>Momentum</th><th>Primary signal</th></tr></thead><tbody>';
+  top.forEach(function(r,i){var b=band(r.dri);
+    h+='<tr><td>'+(i+1)+'</td><td><b>'+esc(r.name)+'</b></td><td>'+fmtInt(r.p)+'</td>'
+     +'<td><b style="color:'+b[1]+'">'+r.dri.toFixed(0)+'</b> <span style="font-size:9.5px;color:'+b[1]+';border:1px solid '+b[1]+';border-radius:3px;padding:0 4px;white-space:nowrap">'+b[0]+'</span></td>'
+     +'<td>'+r.lapse.toFixed(1)+'% '+dpp(r.lapse,w.avgLapse,true)+'</td>'
+     +'<td>'+r.comp.toFixed(1)+'% '+dpp(r.comp,w.avgComp,false)+'</td>'
+     +'<td>'+r.cmpl.toFixed(2)+'</td>'
+     +'<td><span style="color:'+(r.mom>=0?'#0f8a4f':'#c43b2f')+'">'+(r.mom>=0?'▲ +':'▼ −')+Math.abs(r.mom).toFixed(0)+'%</span></td>'
+     +'<td style="color:#6b7a90">'+r.why+'</td></tr>';});
+  h+='</tbody></table>';
+  var best=rows.slice().sort(function(a,b){return a.dri-b.dri;}).slice(0,3);
+  h+='<div style="margin-top:10px;font-size:12px"><b style="color:#0f8a4f">Bright spots (lowest risk):</b> '+best.map(function(r){return esc(r.name)+' ('+r.comp.toFixed(0)+'% completed, '+r.lapse.toFixed(0)+'% lapsed)';}).join(' · ')+'</div>';
+  el.innerHTML=h;
+  if(nt)nt.innerHTML='<b>Risk index (0–100)</b> blends lapse rate (40%), completion shortfall (25%), complaint intensity (20%) and falling registrations '+mwLabel(MW_RE)+' vs '+mwLabel(MW_PR)+' (15%), each min–max scaled within this peer set (min '+w.minN+' projects per '+sub+'; it ranks peers relatively, not as an absolute default probability). Scope averages: lapse '+w.avgLapse.toFixed(1)+'%, completion '+w.avgComp.toFixed(1)+'%. <b>How to use:</b> CRITICAL / ELEVATED → tighten diligence, price delivery-certainty into pitches; STABLE bright spots → lead volume expansion and referral campaigns.';
 }
 function computeMasterTrend(sp){
   var saved=path;path=sp;var savedCli=F.cli;if(masterReraOnly)F.cli=new Set([1]);
@@ -1105,7 +1172,7 @@ function computeMasterTrend(sp){
   path=saved;F.cli=savedCli;return r;
 }
 function scopeAgg(sp,rera,pin){var s={p:path,bk:F.bank,pin:F.pin,cli:F.cli};path=sp||[];F.bank=null;F.pin=(pin!=null?pin:null);if(rera)F.cli=new Set([1]);var A=aggregate();path=s.p;F.bank=s.bk;F.pin=s.pin;F.cli=s.cli;return A;}
-function diffLine(labels,vals){
+function diffLine(labels,vals,an,bn){
   var mob=window.innerWidth<=720,W=mob?560:1200,H=mob?340:280,padL=mob?60:54,padR=20,padT=16,padB=30;
   var plotW=W-padL-padR,plotH=H-padT-padB,mx=1;vals.forEach(function(v){mx=Math.max(mx,Math.abs(v));});
   var n=labels.length,zeroY=padT+plotH/2,f=mob?17:12;
@@ -1118,78 +1185,229 @@ function diffLine(labels,vals){
   s+='<text x="'+(padL-8)+'" y="'+(padT+plotH+2)+'" text-anchor="end" fill="#9aa1ad" font-size="'+f+'">-'+Math.round(mx)+'%</text>';
   var pts=xs.map(function(x,i){return x+','+ys[i];}).join(' ');
   s+='<polyline points="'+pts+'" fill="none" stroke="#7c3aed" stroke-width="'+(mob?3.4:2.5)+'"/>';
-  xs.forEach(function(x,i){var col=vals[i]>=0?'#23a55a':'#e5484d';s+='<circle cx="'+x+'" cy="'+ys[i]+'" r="'+(mob?18:12)+'" fill="transparent" data-tip="'+labels[i]+': '+(vals[i]>=0?'+':'')+vals[i].toFixed(0)+'% (A vs B)"></circle><circle cx="'+x+'" cy="'+ys[i]+'" r="'+(mob?5:4)+'" fill="'+col+'"></circle><text x="'+x+'" y="'+(H-8)+'" text-anchor="middle" fill="#9aa1ad" font-size="'+f+'">'+labels[i]+'</text>';});
+  xs.forEach(function(x,i){var col=vals[i]>=0?'#23a55a':'#e5484d';s+='<circle cx="'+x+'" cy="'+ys[i]+'" r="'+(mob?18:12)+'" fill="transparent" data-tip="'+labels[i]+': '+(vals[i]>=0?'+':'')+vals[i].toFixed(0)+'% ('+esc(an||'A')+' vs '+esc(bn||'B')+')"></circle><circle cx="'+x+'" cy="'+ys[i]+'" r="'+(mob?5:4)+'" fill="'+col+'"></circle><text x="'+x+'" y="'+(H-8)+'" text-anchor="middle" fill="#9aa1ad" font-size="'+f+'">'+labels[i]+'</text>';});
   return s+'</svg>';
 }
 function cmpYears(A,B){var m={};Object.keys(A.yrMap).forEach(function(y){m[y]=1;});Object.keys(B.yrMap).forEach(function(y){m[y]=1;});return Object.keys(m).map(Number).sort(function(a,b){return a-b;});}
+function cmpDualLine(labels,vA,vB,an,bn){
+  var mob=window.innerWidth<=720,W=mob?560:1200,H=mob?340:280,padL=mob?66:60,padR=20,padT=16,padB=30;
+  var plotW=W-padL-padR,plotH=H-padT-padB,n=labels.length,f=mob?17:12;
+  var mx=1;vA.forEach(function(v){if(v>mx)mx=v;});vB.forEach(function(v){if(v>mx)mx=v;});
+  var xs=labels.map(function(_,i){return padL+(n<=1?plotW/2:i/(n-1)*plotW);});
+  function toY(vals){return vals.map(function(v){return padT+plotH-(v/mx)*plotH;});}
+  var yA=toY(vA),yB=toY(vB);
+  var s='<svg viewBox="0 0 '+W+' '+H+'" style="font:12px Segoe UI">';
+  for(var g=0;g<=4;g++){var fr=g/4,gy=padT+plotH-fr*plotH;
+    s+='<line x1="'+padL+'" y1="'+gy+'" x2="'+(W-padR)+'" y2="'+gy+'" stroke="#e2e6ec" stroke-width="1"/>';
+    s+='<text x="'+(padL-8)+'" y="'+(gy+4)+'" text-anchor="end" fill="#9aa1ad" font-size="'+f+'">'+fmt(mx*fr)+'</text>';}
+  [[vA,yA,'#2563eb',an],[vB,yB,'#e0b00d',bn]].forEach(function(sr){
+    var pts=xs.map(function(x,i){return x+','+sr[1][i];}).join(' ');
+    s+='<polyline points="'+pts+'" fill="none" stroke="'+sr[2]+'" stroke-width="'+(mob?3.4:2.5)+'"/>';
+    xs.forEach(function(x,i){s+='<circle cx="'+x+'" cy="'+sr[1][i]+'" r="'+(mob?18:12)+'" fill="transparent" data-tip="'+esc(sr[3])+' · '+labels[i]+': '+fmtInt(sr[0][i])+'"></circle><circle cx="'+x+'" cy="'+sr[1][i]+'" r="'+(mob?5:4)+'" fill="'+sr[2]+'" style="pointer-events:none"></circle>';});
+  });
+  xs.forEach(function(x,i){s+='<text x="'+x+'" y="'+(H-8)+'" text-anchor="middle" fill="#9aa1ad" font-size="'+f+'">'+labels[i]+'</text>';});
+  return s+'</svg>';
+}
+function isPrefixPath(p,q){if(p.length>q.length)return false;for(var i=0;i<p.length;i++){if(p[i].lvl!==q[i].lvl||p[i].code!==q[i].code)return false;}return true;}
+function cmpSubset(aPath,bPath,reraA,reraB,pinA,pinB){
+  var aInB=isPrefixPath(bPath,aPath)&&(pinB==null||pinB===pinA)&&(!reraB||!!reraA);
+  var bInA=isPrefixPath(aPath,bPath)&&(pinA==null||pinA===pinB)&&(!reraA||!!reraB);
+  if(aInB&&!bInA)return 1;if(bInA&&!aInB)return -1;return 0;}
+function sumYrs(M,a,b){var s=0;for(var y=a;y<=b;y++)s+=(M[y]||0);return s;}
+function momOf(M){var r=sumYrs(M,MW_RE[0],MW_RE[1]),p=sumYrs(M,MW_PR[0],MW_PR[1]);return p>0?100*(r-p)/p:null;}
+function peakOf(M){var ys=Object.keys(M).map(Number);if(!ys.length)return null;var p=ys[0];ys.forEach(function(y){if((M[y]||0)>(M[p]||0))p=y;});return p;}
+function topBanksOf(Ag,n){return Object.keys(Ag.bankCnt).map(function(k){return{name:D.bank[+k],c:Ag.bankCnt[k]};}).sort(function(x,y){return y.c-x.c;}).slice(0,n);}
+function cmpGap(kind,a,b,dir,sub){
+  var GREEN='#0f8a4f',RED='#c43b2f',GREY='#6b7a90';
+  function mk(g,unit,extra){var up=g>=0;return{t:(up?'▲ +':'▼ −')+Math.abs(g).toFixed(unit==='pp'?1:0)+(unit==='pp'?' pp':'%')+(extra?' <span style="color:#6b7a90;font-weight:400">· '+extra+'</span>':''),c:up?GREEN:RED};}
+  if(kind==='count'){
+    if(sub===1&&b)return{t:'A = '+(100*a/b).toFixed(1)+'% of B',c:GREY};
+    if(sub===-1&&a)return{t:'B = '+(100*b/a).toFixed(1)+'% of A',c:GREY};
+    if(!a&&!b)return{t:'—',c:GREY};
+    if(!b)return{t:'▲ A only',c:GREEN};
+    if(!a)return{t:'▼ B only',c:RED};
+    var g=(a/b-1)*100;if(Math.abs(g)<1)return{t:'at par',c:GREY};
+    return mk(g,'%',g>=0?'A larger':'B larger');}
+  if(kind==='rate'){
+    var gp=a-b;if(Math.abs(gp)<0.05)return{t:'at par',c:GREY};
+    return mk(gp,'pp',dir?('better: '+(((dir===1)===(gp>0))?'A':'B')):(gp>=0?'A higher':'B higher'));}
+  if(!a&&!b)return{t:'—',c:GREY};
+  if(dir&&(!a||!b))return{t:'—',c:GREY};
+  if(!b)return{t:'▲ A only',c:GREEN};
+  if(!a)return{t:'▼ B only',c:RED};
+  var g2=(a/b-1)*100;if(Math.abs(g2)<1)return{t:'at par',c:GREY};
+  return mk(g2,'%',dir?('better: '+(((dir===1)===(g2>0))?'A':'B')):(g2>=0?'A higher':'B higher'));}
 function compareHeaderHTML(aPath,bPath,reraA,reraB,pinA,pinB){
   var A=scopeAgg(aPath,reraA,pinA),B=scopeAgg(bPath,reraB,pinB),ta=A.tot,tb=B.tot;
   var aN=(pinA!=null?'PIN '+D.pin[pinA]:(aPath.length?aPath[aPath.length-1].name:'Maharashtra'))+(reraA?' · RERA Easy':''),bN=(pinB!=null?'PIN '+D.pin[pinB]:(bPath.length?bPath[bPath.length-1].name:'Maharashtra'))+(reraB?' · RERA Easy':'');
+  var Pa=ta.projects||0,Pb=tb.projects||0,sub=cmpSubset(aPath,bPath,reraA,reraB,pinA,pinB);
   function avg(t,k){return t.projects?t[k]/t.projects:0;}
-  function d(a,b){if(!b)return a?'+∞':'—';var x=(a/b-1)*100;return (x>=0?'+':'')+x.toFixed(0)+'%';}
-  function shareTxt(x,y){return y?(x/y*100).toFixed(0)+'%':'—';}
-  function pctf(v){return v.toFixed(1)+'%';}
-  var rows=[['Registered projects',ta.projects,tb.projects,fmtInt,''],
-    ['Avg units / project',avg(ta,'units'),avg(tb,'units'),fmt,''],
-    ['Avg carpet area',avg(ta,'carpet'),avg(tb,'carpet'),fmt,''],
-    ['Completion rate',pct(ta.completed,ta.projects),pct(tb.completed,tb.projects),pctf,''],
-    ['Lapse rate',pct(ta.lapsed,ta.projects),pct(tb.lapsed,tb.projects),pctf,''],
-    ['RERA Easy clientele',ta.cliCnt,tb.cliCnt,fmtInt,'rera']];
+  var caR=Pa?pct(ta.completed,Pa):0,cbR=Pb?pct(tb.completed,Pb):0,laR=Pa?pct(ta.lapsed,Pa):0,lbR=Pb?pct(tb.lapsed,Pb):0;
+  var dyA=ta.daysCnt?ta.daysSum/ta.daysCnt:0,dyB=tb.daysCnt?tb.daysSum/tb.daysCnt:0;
+  var cpA=Pa?ta.complaints/Pa:0,cpB=Pb?tb.complaints/Pb:0;
+  var penA=Pa?pct(ta.cliCnt,Pa):0,penB=Pb?pct(tb.cliCnt,Pb):0;
+  function chip(mine,other,unit){
+    if(!mine&&!other)return '';
+    var g;
+    if(unit==='pp')g=mine-other;
+    else if(!other)g=Infinity;
+    else g=100*(mine/other-1);
+    if(g!==Infinity&&Math.abs(g)<(unit==='pp'?0.05:1))return ' <span style="color:#6b7a90;font-size:11px">±0</span>';
+    var up=g>=0,col=up?'#0f8a4f':'#c43b2f';
+    var txt=(g===Infinity)?'▲ +∞':((up?'▲ +':'▼ −')+Math.abs(g).toFixed(unit==='pp'?1:0)+(unit==='pp'?' pp':'%'));
+    return ' <span style="color:'+col+';font-size:11px;white-space:nowrap">'+txt+'</span>';
+  }
+  function shr(child,par,lbl){return ' <span style="color:#6b7a90;font-size:11px">('+(par?(100*child/par).toFixed(1):'0')+'% of '+lbl+')</span>';}
+  var rows=[
+    ['Registered projects',fmtInt(Pa)+(sub===1?shr(Pa,Pb,esc(bN)):(sub===-1?'':chip(Pa,Pb,'%'))),fmtInt(Pb)+(sub===-1?shr(Pb,Pa,esc(aN)):(sub===1?'':chip(Pb,Pa,'%')))],
+    ['Avg units / project',fmt(avg(ta,'units'))+chip(avg(ta,'units'),avg(tb,'units'),'%'),fmt(avg(tb,'units'))+chip(avg(tb,'units'),avg(ta,'units'),'%')],
+    ['Avg carpet / project (sq. m)',fmt(avg(ta,'carpet'))+chip(avg(ta,'carpet'),avg(tb,'carpet'),'%'),fmt(avg(tb,'carpet'))+chip(avg(tb,'carpet'),avg(ta,'carpet'),'%')],
+    ['Avg land / project (sq. m)',fmt(avg(ta,'land'))+chip(avg(ta,'land'),avg(tb,'land'),'%'),fmt(avg(tb,'land'))+chip(avg(tb,'land'),avg(ta,'land'),'%')],
+    ['Completion rate',caR.toFixed(1)+'%'+chip(caR,cbR,'pp'),cbR.toFixed(1)+'%'+chip(cbR,caR,'pp')],
+    ['Lapse rate',laR.toFixed(1)+'%'+chip(laR,lbR,'pp'),lbR.toFixed(1)+'%'+chip(lbR,laR,'pp')],
+    ['Avg days to complete',(dyA?fmtInt(dyA):'—')+((dyA&&dyB)?chip(dyA,dyB,'%'):''),(dyB?fmtInt(dyB):'—')+((dyA&&dyB)?chip(dyB,dyA,'%'):'')],
+    ['Complaints / project',cpA.toFixed(2)+chip(cpA,cpB,'%'),cpB.toFixed(2)+chip(cpB,cpA,'%')],
+    ['RERA Easy penetration','<b style="color:#e0b00d">'+penA.toFixed(1)+'%</b> <span class="muted">('+fmtInt(ta.cliCnt)+')</span>'+chip(penA,penB,'pp'),'<b style="color:#e0b00d">'+penB.toFixed(1)+'%</b> <span class="muted">('+fmtInt(tb.cliCnt)+')</span>'+chip(penB,penA,'pp')]];
   var yl=cmpYears(A,B),diff=yl.map(function(y){var a=A.yrMap[y]||0,b=B.yrMap[y]||0;return b?100*(a-b)/b:(a?100:0);});
+  var mA=momOf(A.yrMap),mB=momOf(B.yrMap);
+  var ins=[];
+  if(sub===1)ins.push('<b>Scale:</b> '+esc(aN)+' accounts for <b>'+(Pb?(100*Pa/Pb).toFixed(1):'0')+'%</b> of '+esc(bN)+' supply ('+fmtInt(Pa)+' of '+fmtInt(Pb)+' projects) — read this comparison as part-vs-whole benchmarking, not two independent markets.');
+  else if(sub===-1)ins.push('<b>Scale:</b> '+esc(bN)+' accounts for <b>'+(Pa?(100*Pb/Pa).toFixed(1):'0')+'%</b> of '+esc(aN)+' supply ('+fmtInt(Pb)+' of '+fmtInt(Pa)+' projects) — read this comparison as part-vs-whole benchmarking, not two independent markets.');
+  else if(Pa&&Pb)ins.push('<b>Scale:</b> '+esc(Pa>=Pb?aN:bN)+' is the larger market — '+fmtInt(Math.max(Pa,Pb))+' vs '+fmtInt(Math.min(Pa,Pb))+' projects ('+fmtInt(100*(Math.max(Pa,Pb)/Math.min(Pa,Pb)-1))+'% larger).');
+  if(Pa&&Pb){ins.push('<b>Delivery:</b> '+esc(caR>=cbR?aN:bN)+' leads completion by <b>'+Math.abs(caR-cbR).toFixed(1)+' pp</b>; '+esc(laR<=lbR?aN:bN)+' carries the lower lapse risk (<b>'+Math.abs(laR-lbR).toFixed(1)+' pp</b> lower).');
+    if(dyA&&dyB)ins.push('<b>Speed:</b> '+esc(dyA<=dyB?aN:bN)+' completes faster on average ('+fmtInt(Math.min(dyA,dyB))+' vs '+fmtInt(Math.max(dyA,dyB))+' days).');
+    if(mA!=null&&mB!=null)ins.push('<b>Momentum ('+mwLabel(MW_RE)+' vs '+mwLabel(MW_PR)+'):</b> '+esc(mA>=mB?aN:bN)+' shows the stronger recent registration trend ('+esc(aN)+' '+(mA>=0?'+':'')+mA.toFixed(0)+'% vs '+esc(bN)+' '+(mB>=0?'+':'')+mB.toFixed(0)+'%).');
+    if(Pa<30||Pb<30)ins.push('<b>Caution:</b> '+esc(Pa<Pb?aN:bN)+' has fewer than 30 projects in scope — percentage gaps are volatile; read direction, not magnitude.');}
   var h='<div class="mcard" style="max-width:1040px;margin-bottom:14px"><div class="mc-body" style="padding:18px 26px 22px">';
-  h+='<div class="mc-sect"><h3>Head-to-head — '+esc(aN)+' (A) vs '+esc(bN)+' (B)</h3>';
-  h+='<table style="width:100%"><thead><tr><th>Metric</th><th>'+esc(aN)+' (A)</th><th>'+esc(bN)+' (B)</th></tr></thead><tbody>'+rows.map(function(r){var av=r[3](r[1]),bv=r[3](r[2]);if(r[4]==='rera'){av+=' <b style="color:#e0b00d">'+pctf(pct(ta.cliCnt,ta.projects))+'</b>';bv+=' <b style="color:#e0b00d">'+pctf(pct(tb.cliCnt,tb.projects))+'</b>';}return '<tr><td>'+r[0]+'</td><td>'+av+' <span class="muted">('+shareTxt(r[1],r[2])+' of B)</span></td><td>'+bv+' <span class="muted">('+shareTxt(r[2],r[1])+' of A)</span></td></tr>';}).join('')+'</tbody></table></div>';
-  h+='<div class="mc-sect"><h3>Year-wise % difference (A vs B registrations)</h3><div class="mc-panel"><div class="chartbox" style="height:280px">'+diffLine(yl,diff)+'</div><div class="muted" style="font-size:11.5px;margin-top:6px">Positive = A registered more than B that year; negative = fewer.</div></div></div>';
+  h+='<div class="mc-sect"><h3>Head-to-head — '+esc(aN)+' vs '+esc(bN)+'</h3>';
+  h+='<table style="width:100%"><thead><tr><th>Metric</th><th>'+esc(aN)+'</th><th>'+esc(bN)+'</th></tr></thead><tbody>'+rows.map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>';}).join('')+'</tbody></table>';
+  h+='<div class="muted" style="font-size:11px;margin-top:6px">How to read: each side shows its own gap against the other — <span style="color:#0f8a4f;font-weight:700">▲ green = higher</span>, <span style="color:#c43b2f;font-weight:700">▼ red = lower</span> (share-market convention). Averages compare in relative %, rates in percentage points (pp). For lapse, days and complaints lower is better — the analyst read below names who leads.</div></div>';
+  if(ins.length)h+='<div class="mc-sect"><h3>Analyst read — at a glance</h3><ul style="margin:6px 0 2px 18px;padding:0;font-size:12.5px;line-height:1.75">'+ins.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul></div>';
+  var vA=yl.map(function(y){return A.yrMap[y]||0;}),vB=yl.map(function(y){return B.yrMap[y]||0;});
+  h+='<div class="mc-sect"><h3>Year-wise registrations — '+esc(aN)+' vs '+esc(bN)+'</h3><div class="mc-panel">'+
+     '<div style="display:flex;flex-wrap:wrap;gap:18px;margin-bottom:8px;font-size:12px;color:#374151"><span style="display:inline-flex;align-items:center;gap:7px"><span style="width:12px;height:12px;border-radius:3px;background:#2563eb;display:inline-block"></span>'+esc(aN)+'</span><span style="display:inline-flex;align-items:center;gap:7px"><span style="width:12px;height:12px;border-radius:3px;background:#e0b00d;display:inline-block"></span>'+esc(bN)+'</span></div>'+
+     '<div class="chartbox" style="height:280px">'+cmpDualLine(yl,vA,vB,aN,bN)+'</div>'+
+     '<div class="muted" style="font-size:11.5px;margin-top:6px">Both lines share one absolute scale — hover any point for the exact count. '+YR_MIN+' carries the launch backlog and '+YR_MAX+' is year-to-date.</div></div></div>';
   h+='<div style="text-align:right;margin-top:6px"><button class="pvbtn" id="cmpReportBtn">📄 Compare Analysis Report</button></div>';
   return h+'</div></div>';
 }
 function buildCompareReport(aPath,bPath,reraA,reraB,pinA,pinB){
   var A=scopeAgg(aPath,reraA,pinA),B=scopeAgg(bPath,reraB,pinB),ta=A.tot,tb=B.tot;
   var aN=(pinA!=null?'PIN '+D.pin[pinA]:(aPath.length?aPath[aPath.length-1].name:'Maharashtra'))+(reraA?' · RERA Easy':''),bN=(pinB!=null?'PIN '+D.pin[pinB]:(bPath.length?bPath[bPath.length-1].name:'Maharashtra'))+(reraB?' · RERA Easy':'');
-  var Pa=ta.projects||1,Pb=tb.projects||1;
+  var rPa=ta.projects||0,rPb=tb.projects||0,Pa=rPa||1,Pb=rPb||1;
+  var sub=cmpSubset(aPath,bPath,reraA,reraB,pinA,pinB);
   function avg(t,k){return t.projects?t[k]/t.projects:0;}
-  function d(a,b){if(!b)return a?'+∞':'—';var x=(a/b-1)*100;return (x>=0?'+':'')+x.toFixed(0)+'%';}
+  function sgn(x,dec){return (x>=0?'+':'')+x.toFixed(dec);}
+  function gcell(g){var t=g.t.replace(/\bA\b/g,esc(aN)).replace(/\bB\b/g,esc(bN));return '<b style="color:'+g.c+'">'+t+'</b>';}
   function stronger(a,b,hi){return (hi?a>=b:a<=b)?aN:bN;}
-  var caR=pct(ta.completed,Pa),cbR=pct(tb.completed,Pb),laR=pct(ta.lapsed,Pa),lbR=pct(tb.lapsed,Pb);
+  var caR=pct(ta.completed,Pa),cbR=pct(tb.completed,Pb),laR=pct(ta.lapsed,Pa),lbR=pct(tb.lapsed,Pb),acA=pct(ta.active,Pa),acB=pct(tb.active,Pb);
+  var dyA=ta.daysCnt?ta.daysSum/ta.daysCnt:0,dyB=tb.daysCnt?tb.daysSum/tb.daysCnt:0;
+  var cpA=ta.complaints/Pa,cpB=tb.complaints/Pb;
+  var penA=pct(ta.cliCnt,Pa),penB=pct(tb.cliCnt,Pb);
   var yl=cmpYears(A,B),diff=yl.map(function(y){var a=A.yrMap[y]||0,b=B.yrMap[y]||0;return b?100*(a-b)/b:(a?100:0);});
-  var tyA=D.ptype.map(function(nm,i){return {nm:nm,c:A.typeCnt[i]};}).sort(function(a,b){return b.c-a.c;});
-  var tyB=D.ptype.map(function(nm,i){return {nm:nm,c:B.typeCnt[i]};}).sort(function(a,b){return b.c-a.c;});
+  var mA=momOf(A.yrMap),mB=momOf(B.yrMap),pkA=peakOf(A.yrMap),pkB=peakOf(B.yrMap);
+  var effA=ta.builtup>0?100*ta.carpet/ta.builtup:0,effB=tb.builtup>0?100*tb.carpet/tb.builtup:0;
+  var densA=avg(ta,'land')>0?1000*avg(ta,'units')/avg(ta,'land'):0,densB=avg(tb,'land')>0?1000*avg(tb,'units')/avg(tb,'land'):0;
+  var small=(rPa<30||rPb<30);
+  var mix=D.ptype.map(function(nm,i){var sa=pct(A.typeCnt[i]||0,Pa),sb=pct(B.typeCnt[i]||0,Pb);return{nm:nm,sa:sa,sb:sb,gap:sa-sb};});
+  var topGap=mix.slice().sort(function(x,y){return Math.abs(y.gap)-Math.abs(x.gap);})[0];
+  var bkA=topBanksOf(A,5),bkB=topBanksOf(B,5);
+  var bkSet={};bkB.forEach(function(b){bkSet[b.name]=1;});
+  var overlap=bkA.filter(function(b){return bkSet[b.name];}).length;
   var h='';
   h+='<div class="rhead"><div class="rlogo"><img class="rlogoimg" src="__LOGO_LIGHT__" alt="RERA Easy"></div><div style="text-align:right;font-size:11px;color:#6b7a90">Report generated<br><b style="color:#171717">'+new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})+'</b></div></div>';
   h+='<h2 class="title">Comparative Market Analysis</h2>';
-  h+='<div class="scopemeta"><b>A:</b> '+esc(aN)+'  vs  <b>B:</b> '+esc(bN)+'  |  '+esc(activeFilterDesc())+'</div>';
+  h+='<div class="scopemeta"><b>'+esc(aN)+'</b>  vs  <b>'+esc(bN)+'</b>  |  '+esc(activeFilterDesc())+'</div>';
   h+='<h3>1. Executive Summary</h3>';
-  h+='<p><b>'+esc(aN)+'</b> carries <b>'+fmtInt(Pa)+'</b> registered projects versus <b>'+fmtInt(Pb)+'</b> in <b>'+esc(bN)+'</b> ('+d(Pa,Pb)+' on A). On delivery, '+esc(stronger(caR,cbR,true))+' leads completion ('+caR.toFixed(1)+'% vs '+cbR.toFixed(1)+'%) while '+esc(stronger(laR,lbR,false))+' carries the lower lapse risk ('+Math.min(laR,lbR).toFixed(1)+'% vs '+Math.max(laR,lbR).toFixed(1)+'%). Average project scale is '+fmt(avg(ta,"units"))+' vs '+fmt(avg(tb,"units"))+' units.</p>';
-  h+='<h3>2. Key Metrics — Side by Side</h3>';
-  h+='<table><thead><tr><th>Metric</th><th>'+esc(aN)+' (A)</th><th>'+esc(bN)+' (B)</th><th>A vs B</th></tr></thead><tbody>'+
-    [['Registered projects',fmtInt(Pa),fmtInt(Pb),d(Pa,Pb)],
-     ['Total units',fmt(ta.units),fmt(tb.units),d(ta.units,tb.units)],
-     ['Total carpet area',fmt(ta.carpet),fmt(tb.carpet),d(ta.carpet,tb.carpet)],
-     ['Avg units / project',fmt(avg(ta,'units')),fmt(avg(tb,'units')),d(avg(ta,'units'),avg(tb,'units'))],
-     ['Avg carpet / project',fmt(avg(ta,'carpet')),fmt(avg(tb,'carpet')),d(avg(ta,'carpet'),avg(tb,'carpet'))],
-     ['Completion rate',caR.toFixed(1)+'%',cbR.toFixed(1)+'%',(caR-cbR>=0?'+':'')+(caR-cbR).toFixed(1)+' pp'],
-     ['Lapse rate',laR.toFixed(1)+'%',lbR.toFixed(1)+'%',(laR-lbR>=0?'+':'')+(laR-lbR).toFixed(1)+' pp'],
-     ['Avg complaints / project',(ta.complaints/Pa).toFixed(2),(tb.complaints/Pb).toFixed(2),d(ta.complaints/Pa,tb.complaints/Pb)],
-     ['Total land area',fmt(ta.land),fmt(tb.land),d(ta.land,tb.land)],
-     ['Total built-up area',fmt(ta.builtup),fmt(tb.builtup),d(ta.builtup,tb.builtup)],
-     ['Avg days to complete',ta.daysCnt?fmtInt(ta.daysSum/ta.daysCnt):'—',tb.daysCnt?fmtInt(tb.daysSum/tb.daysCnt):'—','—'],
-     ['RERA Easy clientele',fmtInt(ta.cliCnt)+' ('+pct(ta.cliCnt,Pa).toFixed(1)+'%)',fmtInt(tb.cliCnt)+' ('+pct(tb.cliCnt,Pb).toFixed(1)+'%)',d(ta.cliCnt,tb.cliCnt)]
-    ].map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td><b>'+r[3]+'</b></td></tr>';}).join('')+'</tbody></table>';
-  h+='<h3>3. Registration Trend & Year-wise Difference</h3>';
-  h+='<table><thead><tr><th>Year</th>'+yl.map(function(y){return '<th>'+y+'</th>';}).join('')+'</tr></thead><tbody>'+
-     '<tr><td>'+esc(aN)+' (A)</td>'+yl.map(function(y){return '<td>'+fmtInt(A.yrMap[y]||0)+'</td>';}).join('')+'</tr>'+
-     '<tr><td>'+esc(bN)+' (B)</td>'+yl.map(function(y){return '<td>'+fmtInt(B.yrMap[y]||0)+'</td>';}).join('')+'</tr>'+
-     '<tr><td>A vs B %</td>'+diff.map(function(v){return '<td class="'+(v>=0?'pos':'neg')+'">'+(v>=0?'+':'')+v.toFixed(0)+'%</td>';}).join('')+'</tr></tbody></table>';
+  if(sub!==0){var par=(sub===1?bN:aN),chd=(sub===1?aN:bN),chP=(sub===1?rPa:rPb),paP=(sub===1?rPb:rPa);
+    h+='<p><b>'+esc(chd)+'</b> is a constituent of <b>'+esc(par)+'</b>, contributing <b>'+(paP?(100*chP/paP).toFixed(1):'0')+'%</b> of its '+fmtInt(paP)+' registered projects. This report therefore benchmarks the sub-market against its parent average rather than treating the two as independent markets.</p>';}
+  else h+='<p><b>'+esc(rPa>=rPb?aN:bN)+'</b> is the larger of the two markets with <b>'+fmtInt(Math.max(rPa,rPb))+'</b> registered projects against <b>'+fmtInt(Math.min(rPa,rPb))+'</b>. The two scopes are independent slices of the same MahaRERA registry and are directly comparable on averages and rates.</p>';
+  h+='<p>On delivery, <b>'+esc(stronger(caR,cbR,true))+'</b> converts more of its registered supply into completed stock ('+caR.toFixed(1)+'% vs '+cbR.toFixed(1)+'%, a '+Math.abs(caR-cbR).toFixed(1)+' pp gap), while <b>'+esc(stronger(laR,lbR,false))+'</b> carries the lower lapse risk ('+Math.min(laR,lbR).toFixed(1)+'% vs '+Math.max(laR,lbR).toFixed(1)+'%). '+((dyA&&dyB)?'Average completion runs <b>'+fmtInt(dyA)+'</b> days in '+esc(aN)+' against <b>'+fmtInt(dyB)+'</b> in '+esc(bN)+' — '+esc(dyA<=dyB?aN:bN)+' delivers faster. ':'')+'Complaint intensity stands at '+cpA.toFixed(2)+' vs '+cpB.toFixed(2)+' per project.</p>';
+  h+='<p>'+((mA!=null&&mB!=null)?'Registration momentum ('+mwLabel(MW_RE)+' vs '+mwLabel(MW_PR)+') is <b>'+sgn(mA,0)+'%</b> for '+esc(aN)+' and <b>'+sgn(mB,0)+'%</b> for '+esc(bN)+' — <b>'+esc(mA>=mB?aN:bN)+'</b> has the stronger recent trend. ':'')+'RERA Easy penetration is <b>'+penA.toFixed(1)+'%</b> in '+esc(aN)+' vs <b>'+penB.toFixed(1)+'%</b> in '+esc(bN)+'.</p>';
+  h+='<div class="kgrid">'+kbox('Projects',fmtInt(rPa),esc(aN))+kbox('Projects',fmtInt(rPb),esc(bN))+kbox('Completion gap',sgn(caR-cbR,1)+' pp',esc(aN)+' minus '+esc(bN))+kbox('Lapse gap',sgn(laR-lbR,1)+' pp',esc(aN)+' minus '+esc(bN)+' (lower is better)')+kbox('Momentum',(mA==null?'—':sgn(mA,0)+'%'),esc(aN)+' · '+mwLabel(MW_RE)+' vs '+mwLabel(MW_PR))+kbox('Momentum',(mB==null?'—':sgn(mB,0)+'%'),esc(bN)+' · '+mwLabel(MW_RE)+' vs '+mwLabel(MW_PR))+'</div>';
+  h+='<h3>2. Methodology & Definitions</h3>';
+  h+='<p>Both scopes are computed from the same MahaRERA registry export and pass through identical global filters (registration years '+F.yrMin+'–'+F.yrMax+' and any project-type / status / clientele selections shown in the header). Because the filters are held constant, every difference reported here is attributable to the scopes themselves rather than to filter artefacts.'+(sub!==0?' As one scope contains the other, the parent’s figures include the child’s; part-to-whole comparisons understate contrasts against the parent-excluding-child.':'')+'</p>';
+  h+='<p><b>Comparison conventions.</b></p><ul>'
+   +'<li><b>Volumes</b> (project counts, total units, total areas) are compared in relative terms — or expressed as a share of the parent where one scope contains the other.</li>'
+   +'<li><b>Per-project averages</b> are compared in relative %. Averages normalise for market size and are the fair basis for structural comparison between markets of different scale.</li>'
+   +'<li><b>Rates</b> (completion, lapse, penetration) are compared in <b>percentage points (pp)</b>. Taking ratios of two percentages exaggerates differences when the base rate is small, so ratios are deliberately avoided.</li></ul>';
+  h+='<p><b>Definitions.</b></p><ul>'
+   +'<li><b>Completion / lapse / active rate</b> — share of in-scope registrations by current RERA status. Completion measures converted supply; lapse measures registrations that failed to remain in force; together they are the two poles of supply reliability.</li>'
+   +'<li><b>Avg days to complete</b> — completed projects only, missing values excluded. Conditioning on completion introduces survivorship bias, so true expected timelines are longer.</li>'
+   +'<li><b>Carpet vs built-up</b> — carpet is usable area, built-up is sanctioned construction; carpet ÷ built-up approximates saleable-space efficiency.</li>'
+   +'<li><b>Complaints / project</b> — cumulative registry complaints over in-scope projects; a customer-friction proxy, not adjudicated outcomes.</li>'
+   +'<li><b>Momentum</b> — registrations in '+mwLabel(MW_RE)+' vs '+mwLabel(MW_PR)+'. '+YR_MAX+' (year-to-date) and the '+YR_MIN+' launch backlog are excluded from the windows.</li>'
+   +'<li><b>RERA Easy penetration</b> — share of in-scope projects that are RERA Easy clientele.</li></ul>';
+  h+='<h3>3. Market Scale & Structure</h3>';
+  h+='<table><thead><tr><th>Measure</th><th>'+esc(aN)+'</th><th>'+esc(bN)+'</th><th>Read</th></tr></thead><tbody>'+
+    [['Registered projects',fmtInt(rPa),fmtInt(rPb),gcell(cmpGap('count',rPa,rPb,0,sub))],
+     ['Total units',fmt(ta.units),fmt(tb.units),gcell(cmpGap('count',ta.units,tb.units,0,sub))],
+     ['Total carpet area (sq. m)',fmt(ta.carpet),fmt(tb.carpet),gcell(cmpGap('count',ta.carpet,tb.carpet,0,sub))],
+     ['Total built-up area (sq. m)',fmt(ta.builtup),fmt(tb.builtup),gcell(cmpGap('count',ta.builtup,tb.builtup,0,sub))],
+     ['Total land area (sq. m)',fmt(ta.land),fmt(tb.land),gcell(cmpGap('count',ta.land,tb.land,0,sub))]
+    ].map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td></tr>';}).join('')+'</tbody></table>';
+  h+='<p>Average project scale is <b>'+fmt(avg(ta,'units'))+'</b> units in A versus <b>'+fmt(avg(tb,'units'))+'</b> in B, on <b>'+fmt(avg(ta,'land'))+'</b> vs <b>'+fmt(avg(tb,'land'))+'</b> sq. m of land per project. '+((densA&&densB)?('That works out to roughly <b>'+densA.toFixed(1)+'</b> vs <b>'+densB.toFixed(1)+'</b> units per 1,000 sq. m of land — <b>'+esc(densA>=densB?aN:bN)+'</b> builds denser, indicating a more vertical, apartment-led development profile, while the other side skews to larger-footprint, lower-density formats.'):'')+'</p>';
   h+='<h3>4. Supply Composition</h3>';
-  h+='<table><thead><tr><th>Project Type</th><th>'+esc(aN)+'</th><th>'+esc(bN)+'</th></tr></thead><tbody>'+D.ptype.map(function(nm,i){return '<tr><td>'+esc(nm)+'</td><td>'+pct(A.typeCnt[i],Pa).toFixed(1)+'%</td><td>'+pct(B.typeCnt[i],Pb).toFixed(1)+'%</td></tr>';}).join('')+'</tbody></table>';
-  h+='<h3>5. Delivery Health & RERA Easy Footprint</h3>';
-  h+='<p><b>'+esc(aN)+'</b> records '+caR.toFixed(1)+'% completed and '+laR.toFixed(1)+'% lapsed, averaging '+(ta.daysCnt?fmtInt(ta.daysSum/ta.daysCnt)+' days ('+(ta.daysSum/ta.daysCnt/365).toFixed(1)+' yrs)':'n/a')+' to complete, with '+(ta.complaints/Pa).toFixed(2)+' complaints per project. <b>'+esc(bN)+'</b> records '+cbR.toFixed(1)+'% completed and '+lbR.toFixed(1)+'% lapsed, averaging '+(tb.daysCnt?fmtInt(tb.daysSum/tb.daysCnt)+' days ('+(tb.daysSum/tb.daysCnt/365).toFixed(1)+' yrs)':'n/a')+' with '+(tb.complaints/Pb).toFixed(2)+' complaints per project.</p>';
-  h+='<p>RERA Easy clientele penetration is <b>'+pct(ta.cliCnt,Pa).toFixed(1)+'%</b> in '+esc(aN)+' ('+fmtInt(ta.cliCnt)+' projects) versus <b>'+pct(tb.cliCnt,Pb).toFixed(1)+'%</b> in '+esc(bN)+' ('+fmtInt(tb.cliCnt)+' projects) — '+esc(pct(ta.cliCnt,Pa)>=pct(tb.cliCnt,Pb)?aN:bN)+' has the deeper RERA Easy footprint relative to its size.</p>';
-  h+='<h3>6. Verdict</h3><ul>'+
-     '<li><b>Volume:</b> '+esc(Pa>=Pb?aN:bN)+' is the larger market ('+fmtInt(Math.max(Pa,Pb))+' vs '+fmtInt(Math.min(Pa,Pb))+' projects).</li>'+
-     '<li><b>Delivery quality:</b> '+esc(stronger(caR,cbR,true))+' has the stronger completion record; '+esc(stronger(laR,lbR,false))+' the lower lapse risk.</li>'+
-     '<li><b>Momentum:</b> the latest year favours '+esc((diff.length&&diff[diff.length-1]>=0)?aN:bN)+' ('+(diff.length?(diff[diff.length-1]>=0?'+':'')+diff[diff.length-1].toFixed(0)+'%':'n/a')+' A-vs-B in '+(yl.length?yl[yl.length-1]:'')+').</li>'+
-     '<li><b>Positioning:</b> lead with '+esc(caR>=cbR?aN:bN)+' on delivery-certainty messaging; use '+esc(Pa>=Pb?aN:bN)+' for scale-led campaigns.</li>'+
+  h+='<table><thead><tr><th>Project Type</th><th>'+esc(aN)+'</th><th>'+esc(bN)+'</th><th>Gap (pp)</th></tr></thead><tbody>'+mix.map(function(r){return '<tr><td>'+esc(r.nm)+'</td><td>'+r.sa.toFixed(1)+'%</td><td>'+r.sb.toFixed(1)+'%</td><td><b>'+sgn(r.gap,1)+' pp</b></td></tr>';}).join('')+'</tbody></table>';
+  h+='<p class="muted" style="font-size:11px">Positive gap = higher share in '+esc(aN)+'; negative = higher share in '+esc(bN)+'.</p>';
+  h+='<p>'+(topGap&&Math.abs(topGap.gap)>=2?('The sharpest mix divergence is <b>'+esc(topGap.nm)+'</b>: '+topGap.sa.toFixed(1)+'% of '+esc(aN)+' against '+topGap.sb.toFixed(1)+'% of '+esc(bN)+' ('+sgn(topGap.gap,1)+' pp). A materially different type mix implies different buyer bases, sales cycles and compliance workloads — campaign messaging and service packaging should be weighted accordingly.'):'The two scopes carry a broadly similar type mix; no single segment diverges by more than ~2 pp, so product positioning can be carried across both without re-segmentation.')+'</p>';
+  h+='<h3>5. Registration Trend & Momentum</h3>';
+  h+='<table><thead><tr><th>Year</th>'+yl.map(function(y){return '<th>'+y+'</th>';}).join('')+'</tr></thead><tbody>'+
+     '<tr><td>'+esc(aN)+'</td>'+yl.map(function(y){return '<td>'+fmtInt(A.yrMap[y]||0)+'</td>';}).join('')+'</tr>'+
+     '<tr><td>'+esc(bN)+'</td>'+yl.map(function(y){return '<td>'+fmtInt(B.yrMap[y]||0)+'</td>';}).join('')+'</tr>'+
+     '<tr><td>Difference %</td>'+diff.map(function(v){return '<td class="'+(v>=0?'pos':'neg')+'">'+(v>=0?'+':'')+v.toFixed(0)+'%</td>';}).join('')+'</tr></tbody></table>';
+  h+='<p>The difference row expresses each year’s registrations in '+esc(aN)+' relative to '+esc(bN)+' (positive = '+esc(aN)+' registered more). '+esc(aN)+' peaked in <b>'+(pkA||'—')+'</b> ('+fmtInt(A.yrMap[pkA]||0)+' projects); '+esc(bN)+' peaked in <b>'+(pkB||'—')+'</b> ('+fmtInt(B.yrMap[pkB]||0)+'). '+((mA!=null&&mB!=null)?('Comparing the last three full years ('+mwLabel(MW_RE)+') with the prior three ('+mwLabel(MW_PR)+'), '+esc(aN)+' moved <b class="'+(mA>=0?'pos':'neg')+'">'+sgn(mA,0)+'%</b> and '+esc(bN)+' <b class="'+(mB>=0?'pos':'neg')+'">'+sgn(mB,0)+'%</b> — <b>'+esc(mA>=mB?aN:bN)+'</b> holds the stronger supply-side momentum. '):'')+YR_MIN+' registrations include the MahaRERA launch backlog and '+YR_MAX+' is year-to-date; both are excluded from the momentum windows.</p>';
+  h+='<h3>6. Delivery Performance & Risk</h3>';
+  h+='<table><thead><tr><th>Indicator</th><th>'+esc(aN)+'</th><th>'+esc(bN)+'</th><th>Read</th></tr></thead><tbody>'+
+    [['Completed',fmtInt(ta.completed)+' ('+caR.toFixed(1)+'%)',fmtInt(tb.completed)+' ('+cbR.toFixed(1)+'%)',gcell(cmpGap('rate',caR,cbR,1,sub))],
+     ['Active',fmtInt(ta.active)+' ('+acA.toFixed(1)+'%)',fmtInt(tb.active)+' ('+acB.toFixed(1)+'%)',gcell(cmpGap('rate',acA,acB,0,sub))],
+     ['Lapsed',fmtInt(ta.lapsed)+' ('+laR.toFixed(1)+'%)',fmtInt(tb.lapsed)+' ('+lbR.toFixed(1)+'%)',gcell(cmpGap('rate',laR,lbR,-1,sub))],
+     ['Avg days to complete',(dyA?fmtInt(dyA)+' ('+(dyA/365).toFixed(1)+' yrs)':'—'),(dyB?fmtInt(dyB)+' ('+(dyB/365).toFixed(1)+' yrs)':'—'),gcell(cmpGap('avg',dyA,dyB,-1,sub))],
+     ['Complaints / project',cpA.toFixed(2),cpB.toFixed(2),gcell(cmpGap('avg',cpA,cpB,-1,sub))]
+    ].map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td></tr>';}).join('')+'</tbody></table>';
+  h+='<p>Completion and lapse are the two poles of supply reliability: completion measures how much registered supply converts into delivered stock, while lapse captures registrations that failed to stay in force — an execution- and funding-stress signal. A high active share alongside low lapse indicates a younger but healthy pipeline rather than a stalled one. On that reading, <b>'+esc(stronger(caR,cbR,true))+'</b> shows the stronger conversion record and <b>'+esc(stronger(laR,lbR,false))+'</b> the sounder risk profile. Complaint intensity — a demand-side friction proxy — favours <b>'+esc(cpA<=cpB?aN:bN)+'</b>.'+(small?' <b>Caution:</b> at least one side has fewer than 30 projects in scope; rate gaps at this sample size are volatile and should be read directionally.':'')+'</p>';
+  h+='<h3>7. Built Form & Density</h3>';
+  h+='<table><thead><tr><th>Per-project average</th><th>'+esc(aN)+'</th><th>'+esc(bN)+'</th><th>Read</th></tr></thead><tbody>'+
+    [['Land (sq. m)',fmt(avg(ta,'land')),fmt(avg(tb,'land')),gcell(cmpGap('avg',avg(ta,'land'),avg(tb,'land'),0,sub))],
+     ['Carpet (sq. m)',fmt(avg(ta,'carpet')),fmt(avg(tb,'carpet')),gcell(cmpGap('avg',avg(ta,'carpet'),avg(tb,'carpet'),0,sub))],
+     ['Built-up (sq. m)',fmt(avg(ta,'builtup')),fmt(avg(tb,'builtup')),gcell(cmpGap('avg',avg(ta,'builtup'),avg(tb,'builtup'),0,sub))],
+     ['Carpet ÷ built-up',(effA?effA.toFixed(0)+'%':'—'),(effB?effB.toFixed(0)+'%':'—'),gcell(cmpGap('rate',effA,effB,0,sub))]
+    ].map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td></tr>';}).join('')+'</tbody></table>';
+  h+='<p>The carpet-to-built-up ratio approximates how much saleable area each sanctioned square metre yields; a higher ratio means more efficient, buyer-friendly floor plates. '+((effA&&effB)?('Here <b>'+esc(effA>=effB?aN:bN)+'</b> runs the more efficient built form ('+Math.max(effA,effB).toFixed(0)+'% vs '+Math.min(effA,effB).toFixed(0)+'%).'):'')+'</p>';
+  h+='<h3>8. Lender Landscape</h3>';
+  h+='<table><thead><tr><th>#</th><th>'+esc(aN)+'</th><th>'+esc(bN)+'</th></tr></thead><tbody>'+[0,1,2,3,4].map(function(i){return '<tr><td>'+(i+1)+'</td><td>'+(bkA[i]?esc(bkA[i].name)+' ('+fmtInt(bkA[i].c)+')':'—')+'</td><td>'+(bkB[i]?esc(bkB[i].name)+' ('+fmtInt(bkB[i].c)+')':'—')+'</td></tr>';}).join('')+'</tbody></table>';
+  h+='<p>'+overlap+' of the top-5 project lenders appear on both sides — the financing ecosystems are '+(overlap>=3?'broadly similar, so lender relationships built in one market transfer readily to the other.':'meaningfully different; channel partnerships need to be cultivated per market.')+'</p>';
+  h+='<h3>9. RERA Easy Footprint</h3>';
+  h+='<p>RERA Easy clientele penetration is <b>'+penA.toFixed(1)+'%</b> in '+esc(aN)+' ('+fmtInt(ta.cliCnt)+' projects) versus <b>'+penB.toFixed(1)+'%</b> in '+esc(bN)+' ('+fmtInt(tb.cliCnt)+' projects). '+esc(penA>=penB?aN:bN)+' is the deeper footprint relative to its size — leverage referrals and case studies there; the lower-penetration side represents the larger white-space for new mandates.</p>';
+  h+='<h3>10. Comparison Scorecard</h3>';
+  var score=[
+    ['Market scale','Registered projects',fmtInt(rPa),fmtInt(rPb),(sub!==0?'— (nested)':(rPa===rPb?'Par':(rPa>rPb?aN:bN)))],
+    ['Average project scale','Units / project',fmt(avg(ta,'units')),fmt(avg(tb,'units')),(Math.abs(avg(ta,'units')-avg(tb,'units'))<0.5?'Par':(avg(ta,'units')>=avg(tb,'units')?aN:bN))],
+    ['Delivery conversion','Completion rate',caR.toFixed(1)+'%',cbR.toFixed(1)+'%',(Math.abs(caR-cbR)<0.5?'Par':(caR>cbR?aN:bN))],
+    ['Supply reliability','Lapse rate (lower wins)',laR.toFixed(1)+'%',lbR.toFixed(1)+'%',(Math.abs(laR-lbR)<0.5?'Par':(laR<lbR?aN:bN))],
+    ['Delivery speed','Avg days (lower wins)',(dyA?fmtInt(dyA):'—'),(dyB?fmtInt(dyB):'—'),((dyA&&dyB)?(Math.abs(dyA-dyB)<15?'Par':(dyA<dyB?aN:bN)):'—')],
+    ['Customer friction','Complaints / project (lower wins)',cpA.toFixed(2),cpB.toFixed(2),(Math.abs(cpA-cpB)<0.02?'Par':(cpA<cpB?aN:bN))],
+    ['Registration momentum',mwLabel(MW_RE)+' vs '+mwLabel(MW_PR),(mA==null?'—':sgn(mA,0)+'%'),(mB==null?'—':sgn(mB,0)+'%'),((mA!=null&&mB!=null)?(Math.abs(mA-mB)<1?'Par':(mA>mB?aN:bN)):'—')],
+    ['RERA Easy penetration','Clientele share',penA.toFixed(1)+'%',penB.toFixed(1)+'%',(Math.abs(penA-penB)<0.3?'Par':(penA>penB?aN:bN))]];
+  var winsA=0,winsB=0;score.forEach(function(r){if(r[4]===aN)winsA++;else if(r[4]===bN)winsB++;});
+  h+='<table><thead><tr><th>Dimension</th><th>Measure</th><th>'+esc(aN)+'</th><th>'+esc(bN)+'</th><th>Advantage</th></tr></thead><tbody>'+score.map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td><td><b>'+esc(r[4])+'</b></td></tr>';}).join('')+'</tbody></table>';
+  h+='<p><b>Scorecard verdict:</b> '+esc(winsA===winsB?'the two scopes split the scored dimensions evenly ('+winsA+'–'+winsB+')':( (winsA>winsB?aN:bN)+' leads on '+Math.max(winsA,winsB)+' of the scored dimensions against '+Math.min(winsA,winsB)))+'. Dimension wins are unweighted; weight them by your commercial priorities before acting.</p>';
+  h+='<h3>11. Strategic Read & Recommendations</h3><ul>'+
+     '<li><b>Delivery-certainty positioning:</b> lead with <b>'+esc(stronger(caR,cbR,true))+'</b> in messaging that trades on completion track record and compliance strength.</li>'+
+     '<li><b>Scale-led campaigns:</b> use <b>'+esc(rPa>=rPb?aN:bN)+'</b> for volume outreach and flagship developer relationships — it simply has more pipeline to address.</li>'+
+     '<li><b>Risk management:</b> apply tighter diligence in <b>'+esc(laR>lbR?aN:bN)+'</b> where lapse runs '+Math.max(laR,lbR).toFixed(1)+'%; make delivery certainty the differentiator there.</li>'+
+     '<li><b>White space:</b> the lower RERA Easy penetration in <b>'+esc(penA<penB?aN:bN)+'</b> ('+Math.min(penA,penB).toFixed(1)+'%) is the growth runway; the higher-penetration side is the referral base.</li>'+
+     ((mA!=null&&mB!=null)?'<li><b>Narrative:</b> pitch expansion in <b>'+esc(mA>=mB?aN:bN)+'</b> (stronger momentum) and absorption / completion-led demand in the other.</li>':'')+
+     ((topGap&&Math.abs(topGap.gap)>=2)?'<li><b>Product mix:</b> tailor collateral around the '+esc(topGap.nm)+' divergence ('+sgn(topGap.gap,1)+' pp, positive = more in '+esc(aN)+') rather than reusing one deck across both markets.</li>':'')+
+     '</ul>';
+  h+='<h3>12. Analytical Limitations</h3><ul>'+
+     '<li>The registry is supply-side only — it contains no pricing, absorption or demand data; conclusions describe supply structure, not sales velocity.</li>'+
+     '<li>Status is a filing snapshot; registrations, completions and lapses can lag ground reality.</li>'+
+     '<li>'+YR_MAX+' is year-to-date and '+YR_MIN+' carries the launch backlog — momentum windows deliberately exclude both.</li>'+
+     '<li>Avg days to complete conditions on completed projects (survivorship bias) and excludes records with missing values.</li>'+
+     (sub!==0?'<li>The parent scope includes the child, so parent-vs-child gaps understate the contrast against the parent excluding the child.</li>':'')+
+     (small?'<li>At least one scope has under 30 projects; treat all percentage gaps as directional.</li>':'')+
+     '<li>Aggregate comparisons can mask micro-market variation — drill down in the dashboard before acting on any single number.</li>'+
      '</ul>';
   h+=disclaimerHTML();
   h+='<div class="rfoot"><span>RERA Easy - Confidential | Pune +91 91384 90809 · Mumbai +91 99879 57851</span><span>Source: MahaRERA registry, 2017-2026</span></div>';
