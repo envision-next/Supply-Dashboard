@@ -1521,7 +1521,7 @@ document.getElementById('mReport').onclick=function(){buildReport();};
 })();
 (function(){var tb=document.getElementById('themeBtn');
   function apply(dark){document.body.classList.toggle('dark',dark);tb.textContent=dark?'☀ Light':'🌙 Dark';try{localStorage.setItem('reraTheme',dark?'dark':'light');}catch(e){}}
-  var saved='light';try{saved=localStorage.getItem('reraTheme')||'light';}catch(e){}
+  var saved='dark';try{saved=localStorage.getItem('reraTheme')||'dark';}catch(e){}
   apply(saved==='dark');
   tb.onclick=function(){apply(!document.body.classList.contains('dark'));};})();
 var tipEl=document.getElementById('tip');
