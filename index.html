@@ -258,13 +258,13 @@
   .sheet .pos{color:#0f8a4f}.sheet .neg{color:#c43b2f}
   .sheet .rfoot{margin-top:34px;border-top:1px solid #e2e9f2;padding-top:12px;color:#6b7a90;font-size:10.5px;display:flex;justify-content:space-between}
   @media print{
-    @page{margin:0}
+    @page{margin:12mm 13mm}
     body *{visibility:hidden}#reportView,#reportView *{visibility:visible}
     #reportView{position:absolute;inset:auto;background:#fff}.rtoolbar{display:none}
     body.print-report>*:not(#reportView){display:none!important}
     body.print-report #reportView{position:static!important;inset:auto;height:auto;overflow:visible;background:#fff}
     body.print-report .sheet{margin:0 auto}
-    .sheet{box-shadow:none;margin:0;max-width:none;padding:12mm 14mm}
+    .sheet{box-shadow:none;margin:0;max-width:none;padding:0 4px}
     .sheet *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
     .sheet h2.title,.sheet .rhead{break-after:avoid;break-inside:avoid}
     .sheet h3{break-after:avoid;break-inside:avoid}
@@ -346,7 +346,7 @@
     body.print-master #masterView,body.print-master #masterView *{visibility:visible}
     body.print-master #masterView{position:absolute;inset:auto;background:#fff}
     body.print-master>*:not(#masterView){display:none!important}
-    body.print-master #masterView{position:static!important;height:auto;overflow:visible;padding:8mm 10mm}
+    body.print-master #masterView{position:static!important;height:auto;overflow:visible;padding:0}
     body.print-master .mtoolbar{display:none}
     body.print-master .mcard{box-shadow:none;margin:0 0 16px;max-width:none;transform:none;opacity:1;border-radius:0}
     body.print-master .mc-compare{display:block;padding:0}
@@ -450,7 +450,7 @@
       <select id="mYrMin" class="mtsel"></select><span style="color:#c7cbd2">–</span><select id="mYrMax" class="mtsel"></select>
       <button class="backbtn" id="mBack" style="display:none">‹ Single card</button>
       <button class="backbtn" id="mCompare">⇆ Compare</button>
-      <button class="backbtn" id="mPrint">Print / Save as PDF</button><button class="backbtn" id="mClose">Close</button></div></div>
+      <button class="backbtn" id="mReport">📄 Generate Report</button><button class="backbtn" id="mPrint">Print / Save as PDF</button><button class="backbtn" id="mClose">Close</button></div></div>
   <div id="cmpChooser"><div class="cmpbox"><h3>Compare two scopes</h3>
     <div class="cmprow"><button class="gbtn" data-cmp="parent">Current vs Parent</button><button class="gbtn" data-cmp="maha">Current vs Maharashtra</button></div>
     <div class="cmprow" style="flex-direction:column;align-items:stretch;gap:10px">
@@ -1434,14 +1434,15 @@ function updateMasterTrends(){
   });
   document.querySelectorAll('#masterSheet .mc-trs').forEach(function(cb){cb.checked=trendSel.has(cb.getAttribute('data-key'));});
 }
-function openSingleMaster(sp){var rera=masterReraOnly;masterRender=function(){masterScopes={mc:sp};openMaster(masterCardHTML(sp,'mc'),(rera?'RERA Easy Clientele — ':'Master Card — ')+(sp.length?sp[sp.length-1].name:'Maharashtra'));wireMaster('mc');var mb=document.getElementById('mBack');if(mb)mb.style.display='none';};masterRender();}
+function openSingleMaster(sp){var rera=masterReraOnly;masterRender=function(){masterScopes={mc:sp};openMaster(masterCardHTML(sp,'mc'),(rera?'RERA Easy Clientele — ':'Master Card — ')+(sp.length?sp[sp.length-1].name:'Maharashtra'));wireMaster('mc');var mb=document.getElementById('mBack');if(mb)mb.style.display='none';var mr=document.getElementById('mReport');if(mr)mr.style.display='';};masterRender();}
 function buildMasterCard(){masterReraOnly=false;openSingleMaster(path.slice());}
 function reraPreview(){masterReraOnly=true;openSingleMaster(path.slice());}
-function openCompare(aPath,bPath,label,reraA,reraB,pinA,pinB){compareLeft=aPath.slice();compareA=aPath.slice();compareB=bPath.slice();compareReraA=!!reraA;compareReraB=!!reraB;compareA_pin=(pinA!=null?pinA:null);compareB_pin=(pinB!=null?pinB:null);masterRender=function(){masterScopes={mcA:aPath,mcB:bPath};masterReraMap={mcA:!!reraA,mcB:!!reraB};masterPinMap={mcA:(pinA!=null?pinA:null),mcB:(pinB!=null?pinB:null)};var savedPin=F.pin;F.pin=(pinA!=null?pinA:null);masterReraOnly=!!reraA;var hA=masterCardHTML(aPath,'mcA');F.pin=(pinB!=null?pinB:null);masterReraOnly=!!reraB;var hB=masterCardHTML(bPath,'mcB');F.pin=savedPin;masterReraOnly=false;openMaster('<div class="mc-compare">'+hA+hB+'</div>'+compareHeaderHTML(aPath,bPath,reraA,reraB,pinA,pinB),label);wireMaster('mcA');wireMaster('mcB');var rb=document.getElementById('cmpReportBtn');if(rb)rb.onclick=function(){buildCompareReport(compareA,compareB,compareReraA,compareReraB,compareA_pin,compareB_pin);};var mb=document.getElementById('mBack');if(mb)mb.style.display='';};masterRender();}
+function openCompare(aPath,bPath,label,reraA,reraB,pinA,pinB){compareLeft=aPath.slice();compareA=aPath.slice();compareB=bPath.slice();compareReraA=!!reraA;compareReraB=!!reraB;compareA_pin=(pinA!=null?pinA:null);compareB_pin=(pinB!=null?pinB:null);masterRender=function(){masterScopes={mcA:aPath,mcB:bPath};masterReraMap={mcA:!!reraA,mcB:!!reraB};masterPinMap={mcA:(pinA!=null?pinA:null),mcB:(pinB!=null?pinB:null)};var savedPin=F.pin;F.pin=(pinA!=null?pinA:null);masterReraOnly=!!reraA;var hA=masterCardHTML(aPath,'mcA');F.pin=(pinB!=null?pinB:null);masterReraOnly=!!reraB;var hB=masterCardHTML(bPath,'mcB');F.pin=savedPin;masterReraOnly=false;openMaster('<div class="mc-compare">'+hA+hB+'</div>'+compareHeaderHTML(aPath,bPath,reraA,reraB,pinA,pinB),label);wireMaster('mcA');wireMaster('mcB');var rb=document.getElementById('cmpReportBtn');if(rb)rb.onclick=function(){buildCompareReport(compareA,compareB,compareReraA,compareReraB,compareA_pin,compareB_pin);};var mb=document.getElementById('mBack');if(mb)mb.style.display='';var mr=document.getElementById('mReport');if(mr)mr.style.display='none';};masterRender();}
 document.getElementById('previewBtn').onclick=buildMasterCard;
 document.getElementById('reraPreviewBtn').onclick=reraPreview;
 document.getElementById('mClose').onclick=function(){document.getElementById('masterView').classList.remove('open');};
 document.getElementById('mPrint').onclick=function(){document.body.classList.add('print-master');window.print();document.body.classList.remove('print-master');};
+document.getElementById('mReport').onclick=function(){buildReport();};
 (function(){
   var mn=document.getElementById('mYrMin'),mx=document.getElementById('mYrMax');
   years.forEach(function(y){mn.add(new Option(y,y));mx.add(new Option(y,y));});
