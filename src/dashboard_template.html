@@ -201,11 +201,21 @@
     .rtoolbar,.mtoolbar{flex-wrap:wrap;gap:6px}
     footer{padding:18px 16px}
     .foot-in{gap:14px}
+    .mc-sect table,.sheet table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+    .mc-compare{padding:0}
+    .mc-compare .mcard{flex:1 1 100%;max-width:none;margin:14px 0}
+    .mcard{margin:14px 8px 28px;border-radius:14px}
+    .scopemeta{word-break:break-word}
+    .mc-lprow{gap:6px}
+    .cmpbox{padding:16px 14px;margin-top:24px}
   }
   @media(max-width:430px){
     .kpis{grid-template-columns:1fr 1fr}
     .kpi .val{font-size:23px}
     .themebtn{padding:9px 11px}
+    .sheet .kgrid{grid-template-columns:1fr}
+    .mc-title{font-size:19px}
+    .sheet{padding:20px 12px}
   }
 
   /* ---- dark theme ---- */
