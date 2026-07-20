@@ -235,6 +235,24 @@
   .rtoolbar .l{color:#c7cbd2;font-size:12.5px}
   .rtoolbar button{margin-left:8px}
   .sheet{max-width:920px;margin:22px auto;background:#fff;color:#1b2430;padding:50px 58px;box-shadow:0 8px 40px rgba(0,0,0,.4);font-size:13px;line-height:1.55}
+  /* ---- Welcome splash ---- */
+  #welcomeSplash{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(135deg,#0d0d0d,#171717 48%,#23272f);transition:opacity .55s,visibility .55s;cursor:pointer}
+  #welcomeSplash::before{content:"";position:absolute;inset:-25%;pointer-events:none;background:radial-gradient(34% 34% at 28% 30%,rgba(245,197,24,.42),transparent 60%),radial-gradient(34% 34% at 76% 58%,rgba(224,176,13,.30),transparent 60%),radial-gradient(30% 30% at 60% 86%,rgba(255,255,255,.10),transparent 60%);filter:blur(36px);animation:lgDrift 9s ease-in-out 0s infinite alternate}
+  #welcomeSplash .ws-inner{position:relative;text-align:center;color:#fff;padding:44px 60px;border-radius:28px;background:rgba(255,255,255,.07);backdrop-filter:blur(26px) saturate(160%);-webkit-backdrop-filter:blur(26px) saturate(160%);border:1px solid rgba(245,197,24,.35);box-shadow:0 26px 70px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.25);animation:wsPop 1s cubic-bezier(.2,.7,.2,1) both}
+  #welcomeSplash .ws-logo{height:64px;margin-bottom:14px;animation:wsFade .8s ease .1s both}
+  #welcomeSplash .ws-kicker{font-size:13px;letter-spacing:6px;text-transform:uppercase;opacity:.78;margin-bottom:6px;animation:wsFade .8s ease .2s both}
+  #welcomeSplash .ws-title{font-size:58px;font-weight:800;letter-spacing:1px;line-height:1;background:linear-gradient(100deg,#fff 18%,#ffe6a8 40%,#F5C518 54%,#fff 76%);background-size:230% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:wsShine 2.8s linear infinite}
+  #welcomeSplash .ws-sub{font-size:14px;letter-spacing:4px;text-transform:uppercase;opacity:.8;margin-top:10px;animation:wsFade .8s ease .35s both}
+  #welcomeSplash .ws-bar{margin:22px auto 0;width:190px;height:4px;border-radius:4px;background:rgba(255,255,255,.2);overflow:hidden}
+  #welcomeSplash .ws-bar>span{display:block;height:100%;width:0;border-radius:4px;background:linear-gradient(90deg,#F5C518,#ffe6a8);animation:wsLoad 2.3s cubic-bezier(.2,.7,.2,1) forwards}
+  @keyframes lgDrift{0%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(2.5%,-2%,0) scale(1.08)}100%{transform:translate3d(-2%,2.5%,0) scale(1.05)}}
+  @keyframes wsPop{0%{opacity:0;transform:translateY(20px) scale(.93);filter:blur(8px)}100%{opacity:1;transform:none;filter:none}}
+  @keyframes wsShine{100%{background-position:230% center}}
+  @keyframes wsFade{0%{opacity:0;transform:translateY(6px)}100%{opacity:.8;transform:none}}
+  @keyframes wsLoad{0%{width:0}100%{width:100%}}
+  @media(max-width:720px){#welcomeSplash .ws-inner{padding:30px 26px;margin:0 16px}#welcomeSplash .ws-title{font-size:34px}#welcomeSplash .ws-kicker{letter-spacing:4px}}
+  @media(prefers-reduced-motion:reduce){#welcomeSplash,#welcomeSplash *,#welcomeSplash::before{animation:none!important}}
+  @media print{#welcomeSplash{display:none!important}}
   .prtbl{width:100%;border-collapse:collapse;table-layout:fixed}
   .prtbl>thead>tr>td,.prtbl>tbody>tr>td,.prtbl>tfoot>tr>td{padding:0;border:0;white-space:normal;text-align:left}
   .prsp{height:0}
@@ -366,6 +384,7 @@
 </style>
 </head>
 <body>
+<div id="welcomeSplash"><div class="ws-inner"><img class="ws-logo" src="__LOGO_DARK__" alt="RERA Easy"><div class="ws-kicker">RERA Easy</div><div class="ws-title">Supply Dashboard</div><div class="ws-sub">Maharashtra · Market Intelligence</div><div class="ws-bar"><span></span></div></div></div>
 <header>
   <div class="brand">
     <img class="brandlogo" src="__LOGO_DARK__" alt="RERA Easy">
@@ -1022,6 +1041,9 @@ function buildReport(){
 document.getElementById('genReportBtn').onclick=buildReport;
 document.getElementById('rClose').onclick=function(){document.getElementById('reportView').classList.remove('open');};
 document.getElementById('rPrint').onclick=function(){document.body.classList.add('print-report');window.print();document.body.classList.remove('print-report');};
+(function(){var ws=document.getElementById('welcomeSplash');if(!ws)return;var done=false;
+  function hide(){if(done)return;done=true;ws.style.opacity='0';ws.style.visibility='hidden';setTimeout(function(){if(ws.parentNode)ws.parentNode.removeChild(ws);},600);}
+  setTimeout(hide,2700);ws.addEventListener('click',hide);})();
 
 function countUp(el){
   var target=parseFloat(el.getAttribute('data-count'))||0,fid=el.getAttribute('data-fmt'),dur=900,t0=Date.now();
